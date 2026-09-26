@@ -1,4 +1,6 @@
-// Shared HTML report generator (kit tool — invoked by skills, never imported).
+// HTML report generator for tools/build_report.py (invoked, never imported).
+// A project-owned copy of the report generator from the nextage-dev-kit; edit it
+// here freely — nothing syncs over it.
 //
 // Renders a self-contained, theme-aware HTML document: charset + viewport meta,
 // inlined CSS, base64-embedded images, and a true CSS lightbox (✕ close, ‹ › prev/
@@ -7,7 +9,7 @@
 // (doctype/meta/self-contained/theme) is defined, so charset+viewport are never
 // hand-rolled or forgotten.
 //
-// Invoke (subprocess, not import — the supported cross-skill sharing mechanism):
+// Invoke (subprocess, not import):
 //   node <this> <repoRoot> <dataJsonPath> [outHtmlPath]
 //   E2E output defaults to logs/e2e/<project>-e2e-<YYYYMMDD>.html (local date).
 //

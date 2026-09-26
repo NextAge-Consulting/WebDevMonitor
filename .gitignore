@@ -1,6 +1,13 @@
-# Claude Code per-developer state
-.claude/settings.local.json
-.claude/scheduled_tasks.lock
+# Maintainer dev tooling (nextage-dev-kit) — lives on the maintainer's machine,
+# not in the public repo.
+.claude/
+.mcp.json
+biome.json
+scripts/check-dep-alignment.mjs
+scripts/check-stack.mjs
+scripts/check-workspace-tiers.mjs
+scripts/db-branch.mjs
+project-documentation/dependency-policy.md
 # Local tool state — per-machine, never tracked
 .venv
 .uv

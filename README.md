@@ -191,7 +191,7 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
    python3 tools/build_report.py logs/<date>-<server>-analysis.md
    ```
 
-   This writes `logs/<date>-<server>-analysis.html` next to the markdown: one self-contained file with no external assets, light and dark themes, and readable on a phone, ready to attach to an email. Add stat tiles to the top by putting lines like `<!-- stat: 222 | kills -->` in the markdown; they're invisible when the markdown itself is viewed. It needs Node.js, and uses the report generator in `.claude/lib/gen-report.mjs`. See [`logs/example-analysis.html`](logs/example-analysis.html) for the result.
+   This writes `logs/<date>-<server>-analysis.html` next to the markdown: one self-contained file with no external assets, light and dark themes, and readable on a phone, ready to attach to an email. Add stat tiles to the top by putting lines like `<!-- stat: 222 | kills -->` in the markdown; they're invisible when the markdown itself is viewed. It needs Node.js, and uses the report generator in `tools/gen-report.mjs`. See [`logs/example-analysis.html`](logs/example-analysis.html) for the result.
 
 **Everything in `logs/` is git-ignored except the example files**, so real server logs and reports never get committed by accident.
 
@@ -225,7 +225,7 @@ logs/                     Drop logs here (git-ignored), plus the example log and
 project-documentation/    Windows Defender exclusions guide
 ```
 
-The `.claude/`, `.github/`, `.gemini/` and `scripts/` folders and the root config files belong to the development tooling used to build this project. They aren't needed to run the monitor or the analysis.
+The `.github/` and `.gemini/` folders, `.commitlintrc.json` and `.semgrepignore` configure CI and pull-request review for this repository. They aren't needed to run the monitor or the analysis.
 
 ## License
 

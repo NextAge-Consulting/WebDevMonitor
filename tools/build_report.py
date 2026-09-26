@@ -5,9 +5,8 @@ Usage:
     python3 tools/build_report.py logs/<name>-analysis.md [-o out.html]
 
 The markdown stays the source you write and edit. This converts it into the data
-shape of the dev kit's shared report generator (.claude/lib/gen-report.mjs) and
-runs it, so the HTML is self-contained: inlined CSS, light and dark themes, and
-readable on a phone. It needs Node.js; the script itself uses only the Python
+shape of the report generator (tools/gen-report.mjs) and runs it, so the HTML is
+self-contained: inlined CSS, light and dark themes, and readable on a phone. It needs Node.js; the script itself uses only the Python
 standard library.
 
 Markdown conventions it understands:
@@ -29,7 +28,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-GENERATOR = REPO_ROOT / '.claude' / 'lib' / 'gen-report.mjs'
+GENERATOR = Path(__file__).resolve().parent / 'gen-report.mjs'
 
 STAT_RE = re.compile(r'<!--\s*stat:\s*(.+?)\s*\|\s*(.+?)\s*-->')
 TABLE_SEP_RE = re.compile(r'^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$')
