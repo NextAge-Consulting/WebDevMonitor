@@ -6,10 +6,23 @@ All notable changes to WebDevMonitor.
 
 This project has **no build or deployment pipeline**. Versioning and this changelog are kept **by hand**:
 
-1. When `server/WatchWdSessions.ps1` changes behavior, bump its version in **both** places in the script: the header comment on line 1 (`# WatchWdSessions.ps1 - v4.4`) and the `MONITOR STARTED v4.4 ...` log line. The log line is what shows up in every server's log.
+1. When `server/WatchWdSessions.ps1` changes behavior, bump its version in **both** places in the script: the header comment on line 1 (`# WatchWdSessions.ps1 - vX.Y`) and the `MONITOR STARTED vX.Y ...` log line. The log line is what shows up in every server's log.
 2. Add an entry at the top of this file for the new version, with the date and what changed.
 3. Changes that don't touch the monitor script (docs, the analysis tool, the repo itself) go in a dated entry without bumping the monitor version.
 4. Commit with `/ship-main`. Servers get the new version when someone copies `server/` over and re-runs `Install-MonitorTask.ps1`.
+
+---
+
+## v4.5 — 2026-09-26 — Fast memory check
+
+### Added
+- `memCheckIntervalMs` setting (shipped at `1000`): between full cycles, a memory-only check runs every second. It applies **only** the immediate memory threshold (`memKillImmediate`). It uses `Get-Process` alone, with no WMI query, so it's cheap. Memory bombs typically go from a normal size to multi-GB between two 5-second cycles; this catches them within about a second.
+- Startup log line `CONFIG CHECK_INTERVAL:<n>ms MEM_CHECK_INTERVAL:<n>ms|off`.
+
+### Unchanged
+- CPU checks, the sustained memory threshold, `confirmSeconds`, tracking, heartbeats and forensics all still run on the full `checkIntervalMs` cycle, exactly as in v4.4.
+- `KILLING` / `WOULD-KILL` line formats, so existing log analysis keeps working. A kill from the fast pass looks the same as an immediate kill from the full cycle. Its CPU value is the last full-cycle reading.
+- If `memCheckIntervalMs` is missing, 0, or not less than `checkIntervalMs`, the fast pass is off and behavior is identical to v4.4. Existing installs whose `config.json` lacks the setting are unaffected until it's added.
 
 ---
 

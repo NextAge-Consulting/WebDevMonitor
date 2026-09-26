@@ -10,6 +10,7 @@
   "confirmSeconds": 10,
 
   "checkIntervalMs": 5000,
+  "memCheckIntervalMs": 1000,
   "staleMinutes": 10,
   "wmiTimeoutSec": 3,
   "heartbeatMinutes": 5,

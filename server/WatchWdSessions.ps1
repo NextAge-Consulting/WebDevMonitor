@@ -1,4 +1,4 @@
-# WatchWdSessions.ps1 - v4.4
+# WatchWdSessions.ps1 - v4.5
 # Monitors WD*Session.exe processes for runaway memory and/or CPU usage
 # Supports monitor-only mode for safe observation before enabling kills
 # Configuration loaded from config.json (same directory as script)
@@ -28,6 +28,7 @@ $memKillSustained  = [int]$cfg.memKillSustained
 $cpuThresholdPct   = [int]$cfg.cpuThresholdPct
 $confirmSeconds    = [int]$cfg.confirmSeconds
 $checkIntervalMs   = [int]$cfg.checkIntervalMs
+$memCheckIntervalMs = [int]$cfg.memCheckIntervalMs   # 0/missing = no fast memory pass
 $staleMinutes      = [int]$cfg.staleMinutes
 $wmiTimeoutSec     = [int]$cfg.wmiTimeoutSec
 $heartbeatMinutes  = [int]$cfg.heartbeatMinutes
@@ -127,8 +128,12 @@ function Get-ProcessAge($procId) {
 }
 
 # Log startup
-Write-Log "MONITOR STARTED v4.4 (External Config)"
+# Fast memory pass runs only when it is faster than the full cycle and there is an immediate threshold to check
+$fastMemPass = ($memCheckIntervalMs -gt 0) -and ($memCheckIntervalMs -lt $checkIntervalMs) -and ($memKillImmediate -gt 0)
+
+Write-Log "MONITOR STARTED v4.5 (Fast Memory Check)"
 Write-Log "CONFIG PATTERN:$processPattern MODE:$mode LOGLEVEL:$logLevel MEM_IMMEDIATE:${memKillImmediate}MB MEM_SUSTAINED:${memKillSustained}MB CPU:${cpuThresholdPct}% CONFIRM:${confirmSeconds}s CORES:$numCores DETAILS_ON_KILL:$detailsOnKill($detailsOnKillSamples samples)"
+Write-Log "CONFIG CHECK_INTERVAL:${checkIntervalMs}ms MEM_CHECK_INTERVAL:$(if ($fastMemPass) { "${memCheckIntervalMs}ms" } else { 'off' })"
 Write-Log "CONFIG NON_WD_CPU_GAP:${nonWdCpuGapPct}% NON_WD_CPU_TOPN:$nonWdCpuTopN"
 Write-Log "CONFIG_FILE:$configPath"
 
@@ -487,7 +492,87 @@ try {
             $killCount = 0
         }
 
-        Start-Sleep -Milliseconds $checkIntervalMs
+        # 7. Wait for the next full cycle. With a fast memory pass enabled, wake every
+        #    memCheckIntervalMs meanwhile and apply ONLY the immediate memory threshold:
+        #    Get-Process is cheap, no WMI. CPU, sustained memory, tracking and heartbeats
+        #    stay on the full cycle above, unchanged. A memory bomb goes from normal to
+        #    multi-GB between two full cycles, so this catches it seconds sooner.
+        $nextFullCycle = (Get-Date).AddMilliseconds($checkIntervalMs)
+        if (-not $fastMemPass) {
+            Start-Sleep -Milliseconds $checkIntervalMs
+            continue
+        }
+        while ($true) {
+            $remainingMs = ($nextFullCycle - (Get-Date)).TotalMilliseconds
+            if ($remainingMs -le 0) { break }
+            Start-Sleep -Milliseconds ([int][math]::Min($memCheckIntervalMs, $remainingMs))
+            if ((Get-Date) -ge $nextFullCycle) { break }
+
+            $fastProcs = @()
+            try {
+                $fastProcs = @(Get-Process -Name $processPattern -ErrorAction SilentlyContinue)
+            }
+            catch { }
+
+            foreach ($proc in $fastProcs) {
+                if ($null -eq $proc) { continue }
+                $memMB = [math]::Round($proc.WorkingSet64 / 1MB, 1)
+                if ($memMB -lt $memKillImmediate) { continue }
+
+                $procId = $proc.Id
+                # Monitor mode: already flagged, the full cycle is tracking it
+                if ($mode -ne "kill" -and $tracking.ContainsKey($procId) -and $tracking[$procId].State -eq "would-kill") { continue }
+                # CPU is the last full-cycle reading; the fast pass never queries WMI
+                $cpuPct = if ($cpuByPid.ContainsKey($procId)) { $cpuByPid[$procId] } else { 0 }
+                $cpuViolation = ($cpuThresholdPct -gt 0) -and ($cpuPct -ge $cpuThresholdPct)
+                $reason = if ($cpuViolation) { "MEMORY+CPU" } else { "MEMORY" }
+
+                if ($memMB -gt $dailyPeakMem) {
+                    $dailyPeakMem = $memMB
+                    $dailyPeakPid = $procId
+                }
+                # So the forensic dump ends with the sample that triggered the kill
+                Add-RingSample $procId $cpuPct $memMB
+
+                # Same handling as the immediate branch of the full cycle
+                $age = Get-ProcessAge $procId
+                $dailyUniquePids[$procId] = $true
+
+                if ($mode -eq "kill") {
+                    Write-Log "KILLING PID:$procId MEM:${memMB}MB CPU:$cpuPct REASON:$reason AGE:$age (IMMEDIATE)"
+                    Write-KillDetails $procId
+                    try {
+                        Stop-Process -Id $procId -Force -ErrorAction Stop
+                        Write-Log "KILLED PID:$procId"
+                        $killCount++
+                        $dailyKills++
+                    }
+                    catch {
+                        $errMsg = $_.Exception.Message
+                        if ($errMsg.Length -gt 80) { $errMsg = $errMsg.Substring(0, 80) }
+                        Write-Log "KILL-FAILED PID:$procId $errMsg"
+                    }
+                    $tracking.Remove($procId)
+                    Remove-RingPid $procId
+                }
+                else {
+                    # Monitor mode: log WOULD-KILL once, then the full cycle tracks RECOVERED/PROCESS-GONE
+                    if (-not $tracking.ContainsKey($procId)) {
+                        $tracking[$procId] = @{ FirstSeen = (Get-Date); Reason = $reason; State = "would-kill" }
+                        $spikeCount++
+                        $dailySpikes++
+                        Write-Log "WOULD-KILL PID:$procId MEM:${memMB}MB CPU:$cpuPct REASON:$reason AGE:$age (IMMEDIATE, MONITOR MODE)"
+                        Write-KillDetails $procId
+                    }
+                    elseif ($tracking[$procId].State -ne "would-kill") {
+                        $tracking[$procId].State = "would-kill"
+                        $tracking[$procId].Reason = $reason
+                        Write-Log "WOULD-KILL PID:$procId MEM:${memMB}MB CPU:$cpuPct REASON:$reason AGE:$age (IMMEDIATE, MONITOR MODE)"
+                        Write-KillDetails $procId
+                    }
+                }
+            }
+        }
     }
 }
 catch {

@@ -35,7 +35,7 @@ WebDev's session IDs are just operating-system process IDs, so the manual fix ca
 
 1. Lists all `WD*Session` processes and their memory (working set) and CPU.
 2. **Memory, two tiers:**
-   - **Immediate:** a session at or above `memKillImmediate` (3,000 MB) is killed on the spot, with no waiting. Nothing legitimate gets that big.
+   - **Immediate:** a session at or above `memKillImmediate` (3,000 MB) is killed on the spot, with no waiting. Nothing legitimate gets that big. This check also runs **every second** between the 5-second cycles (`memCheckIntervalMs`). It only reads memory, which is cheap, so a memory bomb is caught seconds sooner.
    - **Sustained:** a session above `memKillSustained` (1,500 MB) for `confirmSeconds` (10s) is killed.
 3. **CPU:** a session at or above `cpuThresholdPct` (25% of the whole machine) for `confirmSeconds` is killed.
 4. Before each kill, dumps the last 5 minutes of that process's CPU and memory samples to the log, so you can see exactly how it failed.
@@ -93,7 +93,8 @@ Now and then the Windows performance counters (`Win32_PerfFormattedData_PerfProc
 | `memKillSustained` | `1500` | MB a session must stay above for `confirmSeconds` (0 disables) |
 | `cpuThresholdPct` | `25` | % of the whole machine, as Task Manager shows it (0 disables) |
 | `confirmSeconds` | `10` | How long a sustained violation must last before action |
-| `checkIntervalMs` | `5000` | Poll interval in milliseconds |
+| `checkIntervalMs` | `5000` | Full-cycle interval in milliseconds: memory, CPU (WMI), sustained thresholds, tracking |
+| `memCheckIntervalMs` | `1000` | Fast memory-only check between full cycles, applying only the immediate threshold. Must be less than `checkIntervalMs`. Missing or 0 turns it off, giving v4.4 behavior |
 | `staleMinutes` | `10` | Drop tracking entries older than this |
 | `wmiTimeoutSec` | `3` | Timeout for the WMI CPU query, so a hung query can't stall the monitor |
 | `heartbeatMinutes` | `5` | Heartbeat interval (0 disables) |
