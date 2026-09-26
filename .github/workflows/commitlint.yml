@@ -1,0 +1,49 @@
+# commitlint: enforce conventional commit format on the PR TITLE.
+# Full design + rationale: https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/handbook.md#111-commitlintyml
+#
+# Scope is PR title only — branch commits are NOT linted.
+# - Repo squash-merges with `commit title = PR_TITLE`. Branch commits
+#   are discarded; the PR title is what lands on main.
+# - Local gitflow (`.claude/skills/gitflow/`) enforces conventional
+#   format at commit time for human-authored commits.
+# - Dependabot/Renovate produce malformed branch commits regularly
+#   (Dependabot double-scopes `chore(deps)(deps):` even when
+#   `include: scope` is absent from dependabot.yml). Per-commit linting
+#   would block clean-squash merges. Title-only sidesteps this.
+#
+# Job name MUST stay `lint` — GitHub status check renders as
+# `commitlint / lint`, which /merge reads by name when it self-gates on
+# the PR's check-runs. Renaming silently breaks the gate.
+#
+# Requires .commitlintrc.json at repo root. Parser regex tolerates
+# emoji-prefix commits (`✨ feat: ...`); keep in sync with the format
+# enforced by commit.sh (https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/handbook.md#111-commitlintyml).
+
+name: commitlint
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+      - name: Install commitlint
+        # Pinned, and pinned to the SAME versions .claude/stack-manifest.json
+        # blesses — scripts/check-stack.mjs asserts these two strings appear
+        # here, so the workflow and the manifest cannot drift apart silently.
+        # An unpinned install on a runner executes whatever the registry serves
+        # under that name, and --no-save leaves no record of what ran.
+        run: npm install --no-save @commitlint/cli@21.2.2 @commitlint/config-conventional@21.2.2
+      - name: Lint PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | npx commitlint --config .commitlintrc.json

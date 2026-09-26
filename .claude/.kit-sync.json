@@ -1,0 +1,579 @@
+{
+  "kitRepo": "https://github.com/NextAge-Consulting/nextage-dev-kit.git",
+  "lastSyncedCommit": "b4a160b130b95d245d1a4b4abea1929b0e7aea3c",
+  "lastSyncedAt": "2026-09-26T12:37:23Z",
+  "files": {
+    ".claude/CLAUDE.md": {
+      "sha": "5ebf039ac82bc318166fe8409e0b4aae9e2fab3ead72bf5c30e6ec50698cbacd",
+      "mode": "owned"
+    },
+    ".claude/commands/autonomous.md": {
+      "sha": "1ac8507d8d8eff2107db3bb047db64ebe87a7705a830df518a722d2be651d326",
+      "mode": "owned"
+    },
+    ".claude/commands/catchup.md": {
+      "sha": "dac60fc045cece976ce2a25389632e475177ddb2fa4c237369ef21a98bddd02d",
+      "mode": "owned"
+    },
+    ".claude/commands/checkpoint.md": {
+      "sha": "b2b8d566b57f0f9325f715134fe257670ea8e7ee873d66aa09ec6678dfdf21d0",
+      "mode": "owned"
+    },
+    ".claude/commands/commit.md": {
+      "sha": "b49e7fe620551b06c5d4f8b3600ad2ee1a9300efc722c3005d8c9dc4268794c7",
+      "mode": "owned"
+    },
+    ".claude/commands/deploy.md": {
+      "sha": "6d7c0e8770f7ccdfc0e42e641c8943316749b24b1f4e11cd6acefc40ccd9bc1c",
+      "mode": "owned"
+    },
+    ".claude/commands/dev.md": {
+      "sha": "be1785794cd04345b6d19dfd399a2d06981a329fabf4ece49133c1b06321bf22",
+      "mode": "owned"
+    },
+    ".claude/commands/handoff.md": {
+      "sha": "285be2ddf3c4fef12a464c716e8ed99834fcbd96bc065a458aea4f7b6b574111",
+      "mode": "owned"
+    },
+    ".claude/commands/merge.md": {
+      "sha": "3eee2da9c00ea0e085e2f5b3c928a67bc74e1df5d669b5c07162c8bb32e4dc75",
+      "mode": "owned"
+    },
+    ".claude/commands/open-pr.md": {
+      "sha": "e45ca33c61f29d373916162fa214f8835955a3ae699f3eb5a06cd30b6b17d17c",
+      "mode": "owned"
+    },
+    ".claude/commands/ship-main.md": {
+      "sha": "e28de6f04e6444ed5ccce97f3fe47b9525e0c742dd23bd3b93ecb6790d5061f0",
+      "mode": "owned"
+    },
+    ".claude/commands/triage.md": {
+      "sha": "9d318fc05708732dcc6cd7d58fc3b045493c29e1a98f33937e6a587a9f4d8071",
+      "mode": "owned"
+    },
+    ".claude/commands/ui-design.md": {
+      "sha": "52f49fe2be844ac4b1006e85d2142f42f7471db0810f1ca993ab3b143945c34b",
+      "mode": "owned"
+    },
+    ".claude/commands/work.md": {
+      "sha": "e69dd996c0dd6ad9595933925929f27910083c63ab823dfd2f63c821b2b31ba5",
+      "mode": "owned"
+    },
+    ".claude/gitflow-project.conf": {
+      "sha": "363dd5aa934defd818d54402d494b6bb363945cd57a55c1621a57ee72635cdf5",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-console-log.sh": {
+      "sha": "723ea30e072da57768169fc90e016f43a52979094ae408d5b7ca4584bbdfbda2",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-console-log.test.sh": {
+      "sha": "dc596734e4c4fa9ace74bf75f81788301fbee74747e0c605f47d69d8b63278d2",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-db-commands.sh": {
+      "sha": "b591e80df7692f49bf45c70094d2327ea126eafcb4aa9553d014a5545093f10f",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-db-commands.test.sh": {
+      "sha": "02c8b4d4978003ceb03ce9ee7df1dbe6c612d4b9de667b11800d415a2cc825c0",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-drizzle-handroll.sh": {
+      "sha": "1d2596b2192a195a73355674b74aff86cf79cd8fff2d9f7c58ba106389f07995",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-drizzle-handroll.test.sh": {
+      "sha": "73ef494ccda5f57a49f35efd1a1c2181354a202c23dd7583644690369cfda1d6",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-kit-edit.sh": {
+      "sha": "46fec71e54c4f510b1ec1846be21cc1c6bf1918dbc20fd9c7f9cb416317eb7e5",
+      "mode": "owned"
+    },
+    ".claude/hooks/block-kit-edit.test.sh": {
+      "sha": "0e995543b86132043da889feb324f184538b08f057c37f033ddcadb34a6e4804",
+      "mode": "owned"
+    },
+    ".claude/hooks/dev-server-guard.sh": {
+      "sha": "b971f477093848235acd1602d4801336d9e4dd7d47fda953d55fcbba02fc0ada",
+      "mode": "owned"
+    },
+    ".claude/hooks/dev-server-guard.test.sh": {
+      "sha": "a69ba5c954c33f9dca4512fbb2002206d174c6e235474a8b391babf66c8106b9",
+      "mode": "owned"
+    },
+    ".claude/hooks/git-guard.sh": {
+      "sha": "e3b7c63a69bacf704491213337f1e368a9d34c51e68ca177769454daee3da3bb",
+      "mode": "owned"
+    },
+    ".claude/hooks/git-guard.test.sh": {
+      "sha": "f9f10c071902b3e0d984fcc5da3ee564264f6997653863b4be44ae09d31d13df",
+      "mode": "owned"
+    },
+    ".claude/hooks/npm-guard.sh": {
+      "sha": "049c5da6e5c895502555f0d2fa68bab0b472fcc2cb0c280b12b0a55f76c3822b",
+      "mode": "owned"
+    },
+    ".claude/hooks/npm-guard.test.sh": {
+      "sha": "15ea646e25c646279145e7c424af4a03bcbc28b05bb23278ed35857fc25d556b",
+      "mode": "owned"
+    },
+    ".claude/hooks/rule-authoring-guard.sh": {
+      "sha": "a97fdffe31543acc1d8858053599c8034816a2fe3ce2cdeb222b8f274ad01636",
+      "mode": "owned"
+    },
+    ".claude/hooks/rule-authoring-guard.test.sh": {
+      "sha": "60a5bbb14217015cc3c56873188626914e66956541f6f559ca50acec00a0d3ff",
+      "mode": "owned"
+    },
+    ".claude/hooks/test-on-edit.sh": {
+      "sha": "4838bd221b710c8070aee911707f1beeff385ab3f492bf37830b0a872fa22b73",
+      "mode": "owned"
+    },
+    ".claude/hooks/test-on-edit.test.sh": {
+      "sha": "ffae724c93640bd4f8a11c3aefeedf04a0f6532b6d0a2c05c9fc9e5d3ccb1ce7",
+      "mode": "owned"
+    },
+    ".claude/lib/gen-report.mjs": {
+      "sha": "26e2e83d7ca0895ab01b05537c09a7067aad5424ce762ab5c8db5e42f543fb67",
+      "mode": "owned"
+    },
+    ".claude/output-styles/house.md": {
+      "sha": "20ab0f141c4a36728ab4994c25d7eae42e52251c61835ca68778588142dc117a",
+      "mode": "owned"
+    },
+    ".claude/rules/a11y-baseline.md": {
+      "sha": "e9459a0beb99cba1d53756d390aa63ec24bb5e191f4e7eb6e660e3518d5ad871",
+      "mode": "owned"
+    },
+    ".claude/rules/asking-questions.md": {
+      "sha": "455407a4342e595d7a69c31a2703d62dec571167c9253c2446623a9aa7933176",
+      "mode": "owned"
+    },
+    ".claude/rules/autonomous-sessions.md": {
+      "sha": "857c3d24b3022bf660921e1a6f801f10082cfa21cebca96eac0425f1e2ef7e76",
+      "mode": "owned"
+    },
+    ".claude/rules/bash-rules.md": {
+      "sha": "e9c490125a72834a2347c6687fa6bdc509f129b9a3c2427e6da0f6d3e18e8824",
+      "mode": "owned"
+    },
+    ".claude/rules/cli-utilities.md": {
+      "sha": "eea85de74c6b65ae2bf1675864e24738cbe075a064638ed570151b97ea37e68c",
+      "mode": "owned"
+    },
+    ".claude/rules/communication.md": {
+      "sha": "06948a0c18888bd5af9ba4f824b17568be9e45fcafbb3ff82923c8875573d92f",
+      "mode": "owned"
+    },
+    ".claude/rules/constitution.md": {
+      "sha": "cdbe4d5b1f404cc0d2830ba750ea6f41c57b4f4b380e7f07396f72ee43f719ac",
+      "mode": "owned"
+    },
+    ".claude/rules/dependencies.md": {
+      "sha": "e76d260a31815512131863a811b8abc4f2ece6b557024837e5df6c1553279665",
+      "mode": "owned"
+    },
+    ".claude/rules/dev-server.md": {
+      "sha": "f2c324dc3b5c0b23c042832f1f349e7e7265ea1ebe26b034dc922a6de13724c6",
+      "mode": "owned"
+    },
+    ".claude/rules/development-guidelines.md": {
+      "sha": "a54c9e754f5b85b031591d4c5dd4a94f1ae33cc5a5ff6cf3ba77c958157bd568",
+      "mode": "owned"
+    },
+    ".claude/rules/git.md": {
+      "sha": "a6075396ab1f44c4787e7378cb288a9b2360cf0aef3d912bb636f692f4c2b804",
+      "mode": "owned"
+    },
+    ".claude/rules/integrations/agent-browser.md": {
+      "sha": "78890668293fc537cafdb9a3bfad50f087794831f8239fb3083c92bdf86914c6",
+      "mode": "owned"
+    },
+    ".claude/rules/memory-discipline.md": {
+      "sha": "0f99bf968be82e3d353b6bcb0e5b432cfb208949a70af6a7f9e2407b14204734",
+      "mode": "owned"
+    },
+    ".claude/rules/postgres-drizzle.md": {
+      "sha": "2437e09f1ad046b9b079c65a16a24d1ef0431427768456443db8db53189c2a4e",
+      "mode": "owned"
+    },
+    ".claude/rules/python-rules.md": {
+      "sha": "563ed5cb117430ba707875b45ed252fb55c610bdc08406cff4079ee1871f66d3",
+      "mode": "owned"
+    },
+    ".claude/rules/sqlserver-drizzle.md": {
+      "sha": "04c607ced1be7ecdbfb11c27bea5ebfede04b4557d874b60b0fd104703b73b26",
+      "mode": "owned"
+    },
+    ".claude/rules/testing-verification.md": {
+      "sha": "f91f75bd60487249bf53eecdca931ffa4b05c3c47bd7f93c53d3267f4002d876",
+      "mode": "owned"
+    },
+    ".claude/rules/typescript-rules.md": {
+      "sha": "626bdfd295e90299cca4ad95f3819a693e4338d83d3e68ea7af720abbcd691ab",
+      "mode": "owned"
+    },
+    ".claude/rules/ui-design.md": {
+      "sha": "316ca006f1ab0f308bd49478dda9c6686abf68d11eb028549182a385866d068c",
+      "mode": "owned"
+    },
+    ".claude/rules/ui-patterns.md": {
+      "sha": "e2ba66c007232ca161fbe3b3e17096e75c27eef89c9b8bdb198122cfdab5fde9",
+      "mode": "owned"
+    },
+    ".claude/rules/working-discipline.md": {
+      "sha": "7dfd5ff8aa0e38196d2d42c5194c03b6c983f0f5638706f6ef89543a285518ff",
+      "mode": "owned"
+    },
+    ".claude/settings.json": {
+      "sha": "833d519194c69cd53e66ecb5b51933c8828d3cde8c002b308b21d5f61d556722",
+      "mode": "owned"
+    },
+    ".claude/skills/agent-browser/SKILL.md": {
+      "sha": "e04caa5c18a450a6d3ddacb52156c4b7ce3bdb9f22ba5f1d711fb42e82b26cd2",
+      "mode": "owned"
+    },
+    ".claude/skills/analysis/SKILL.md": {
+      "sha": "187c1ef1a48820b6c872668bfda4dc9d5ad2d7387b39637a93829fc0c75cf55f",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/references/config-example.mjs": {
+      "sha": "bdc0947ac1434036aef5b56b14ccb6fbf5b5ba2d76d17e464d2617319bb92526",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/references/working-with-claude-design.md": {
+      "sha": "73a76a26a4a1bb8b3a9b0b584cc96f96ab2ecc53efbb987d8931abcb39372bd5",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/scripts/build.mjs": {
+      "sha": "ce04239731aa77c31a41d8e0ff37c3f02de2e10d297f58b3df0b93d6c1f57dde",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/scripts/render-check.mjs": {
+      "sha": "04e9c5fce6b05e8e216f59491ecba87be6b6172ad13fbdba96855fa1a1d8bac3",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/scripts/resolve.mjs": {
+      "sha": "de44451a1bd36e1609fe4c76057c178be31edb041fea1fd585fc2221974093f4",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/scripts/resolve.test.mjs": {
+      "sha": "49601d23eed60cd29b030b4e101bfb5b5e60d410d6b33a894d3a0fd46253f438",
+      "mode": "owned"
+    },
+    ".claude/skills/claude-design/SKILL.md": {
+      "sha": "5d7003853d71e20123153d35f97dd00e7a1a500b9e1b4a0fe5e66fece3b27fde",
+      "mode": "owned"
+    },
+    ".claude/skills/dependency-triage/SKILL.md": {
+      "sha": "df02a1105ab620038af9ecdd702226aa4486e266394580398e3443543c4438d7",
+      "mode": "owned"
+    },
+    ".claude/skills/design-system/SKILL.md": {
+      "sha": "898d4e82e811e400de9c65a0c06dacef90da5760e1c0d38a39863edcf0f79c27",
+      "mode": "owned"
+    },
+    ".claude/skills/dev-server/scripts/dev-with-tunnel.mjs": {
+      "sha": "148caef9f55d8effab0e5432d965cc0007861e3d4d4366ad6eb57fe56f79afbd",
+      "mode": "owned"
+    },
+    ".claude/skills/dev-server/scripts/dev.sh": {
+      "sha": "9a5e17eb3060ca96721daae8bd07dbe83594e7f145499671220d17ac24914f8d",
+      "mode": "owned"
+    },
+    ".claude/skills/dev-server/SKILL.md": {
+      "sha": "a7b4c48c0ff44b02449513dc97b77f8793753e7d3b3f00667373183147e6937a",
+      "mode": "owned"
+    },
+    ".claude/skills/dev-server/templates/DevServer.json": {
+      "sha": "daa92d88bc1357b3a016f0fbc77ad6222c67801409b1762833f3c172bf4cc8f0",
+      "mode": "owned"
+    },
+    ".claude/skills/e2e-author/SKILL.md": {
+      "sha": "c8a2fd5ca7bc40805c8e9dec3786f52d89394784c74cad8192140c8bf2b30f6f",
+      "mode": "owned"
+    },
+    ".claude/skills/e2e/example-flow.md": {
+      "sha": "8994b7f046302715355140e61b197ee13a032efdabb876af2a589782989bb8cd",
+      "mode": "owned"
+    },
+    ".claude/skills/e2e/SKILL.md": {
+      "sha": "285088ba97113e8d99d3ec003d94c6da6d114b95be5153f8624b4e1053e14bb3",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/references/changelog-rules.md": {
+      "sha": "746d601c5ff7b4cf7965fca3e6a5c0709f69eed1eb262caf27d1a8ef78be0213",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/references/commit-types.md": {
+      "sha": "a172267bd5517f900123c6659982a60d4fc05ce4023c0df4e253feeff7eef99d",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/references/staged-comment.md": {
+      "sha": "286c17081b890d226c057ccf7fb13bb10d8e0e68c7becf7a5388674304552f6d",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/branch_helpers.sh": {
+      "sha": "d8a85448fc59da5d8c381a0821f0423bcb3b4ff2dfb0048531a437a24aa7cefc",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/branch_helpers.test.sh": {
+      "sha": "e5ccd786c19dca52b8f5891ededb27f3eb06eb7335775f5e032915cc61be3d6e",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/catchup.sh": {
+      "sha": "42310c132d80e336a2fb76400d82745875a80e16bee9ec65473c0acecbc65bd0",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/checkpoint.sh": {
+      "sha": "df77bf4b025a0ed1b252e7c4205fcbcc8a5a5bc54308a771bfdf924b9460608d",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/checkpoint.test.sh": {
+      "sha": "e1d5eda0d251a9eaccda81eff417821b2e3ca87c780e387baa86d87e84599c89",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/commit.sh": {
+      "sha": "b3169cc09c4188d82d641bb75a51bfe7554ed13d7388a3b15eeb4322c2d1c3e4",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/deploy.sh": {
+      "sha": "fdc698b3bde411fdff2a04e56cc41ddb32f44451e461fdb839364cd53edadd17",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/get_timestamp.sh": {
+      "sha": "b76f9166ee25f56e1adbb3b7bc5086591975ce7cbc976fa8605fa8b7af702785",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/issue_helpers.sh": {
+      "sha": "ce78b39a62aa370a2b1a29ccfe2b8b7df85d9af3b0e564095a0ae810d1672133",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/issue_helpers.test.sh": {
+      "sha": "ce7f5e5eba34819e486394375daff9f2d621a906a67831036f50c0e29f4fdd74",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/merge.sh": {
+      "sha": "65c27beee822851a3a22835fd3519178fc80202d59798213d1c2163a66e30c0f",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/open-pr.sh": {
+      "sha": "20bb8d2a8768ff2821279431d8009bde0c32dbe3632c2581f0f858d3e7dec999",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/ship-main.sh": {
+      "sha": "2f8582892af911fc8fe61e757edc3fa01ca6a1ef16424ec107a8fffae1dda899",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/wait-for-pr-ready.sh": {
+      "sha": "01cabccba2f47f0517e6c26a8c6b7b9c20c047f555a0cc402fdd5a2a88e8cbeb",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/work.sh": {
+      "sha": "d62e7fc3f4b4fc465e3f2daeb414e5646898d109fd2e06ed6372ceb1ca4b7030",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/scripts/work.test.sh": {
+      "sha": "9b819a11274338849dc9f98ec18abde02ad9a875c4682c888a32056a49b24980",
+      "mode": "owned"
+    },
+    ".claude/skills/gitflow/SKILL.md": {
+      "sha": "6cacd20b6c966c7ad0e662b8d01091ce70ec5ae2f6f9428aa63666b7b1bf0c78",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/README.md": {
+      "sha": "931d4376b9aa9d6a870ca72d7427226196232e513ec5918e36c082d5acce6dc4",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/auth.md": {
+      "sha": "2cb1a91d196c83d2b62cf05add94a1f5d60bfaa8591e66507881f5bcf2142da3",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/browse-tables.md": {
+      "sha": "527b8221326e6098b55377b93e137820fbef3a6267833d18043d58e3d7b67f0b",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/data-loading.md": {
+      "sha": "976b133acd5dc74452f844d73c486e0b751013971ae9786bb7682e082e1e3978",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/debugging.md": {
+      "sha": "98b5c1801a13670e5bf84d015d387df66985afed87ee49dc00e5c157ef25348d",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/dependency-management.md": {
+      "sha": "6f0590218f933e3100340932507093e95fbd4b76083f330f430beb21c632255a",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/deployment.md": {
+      "sha": "064af85e1354a130efb71f7aeb730fe158091f45f6d4ff36478c8fde936599e9",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/forms.md": {
+      "sha": "21d2c783cca70de26d8d1322a46bc6ed4cb6ec3ecdea13f4c5831809fc96c043",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/loading-states.md": {
+      "sha": "010da951bfb3affc9361aad12620d6b0349dfa8f4dfd7ffe330d12bcbd870c83",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/queries-and-mutations.md": {
+      "sha": "d0889756cc1bab6e4ed871b821dd115e3bcefb59bed98d53995bd1a15a80a895",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/search-params.md": {
+      "sha": "f827b12dace35c6cf7f39a50723d405cd910041f13aad87d4f0302166b561525",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/server-functions.md": {
+      "sha": "681bbd70d5e3931e239ce434de32178507710d277eddc347f848abed9f5b099a",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/references/webhooks.md": {
+      "sha": "b103969e9b1aa23171245adbcee30ccc12fbdfbcc81929626e4b438316a438ba",
+      "mode": "owned"
+    },
+    ".claude/skills/mfing-bible-of-tanstack/SKILL.md": {
+      "sha": "df0785b8bd0ab431698e65fc33c1b7fb77055e7ec3772d130e4d0a350b3bfd31",
+      "mode": "owned"
+    },
+    ".claude/skills/postgres-neon-drizzle/references/collation.md": {
+      "sha": "9abbe241f5f91cd26057b1299443d4b5c3e1ccc27656156cfa6819fce3b01a83",
+      "mode": "owned"
+    },
+    ".claude/skills/postgres-neon-drizzle/references/custom-types.md": {
+      "sha": "3bb5184b15d6f10ca36fd93ade3747ce1d417a7d8f36e2c8304bc570bca5ab6f",
+      "mode": "owned"
+    },
+    ".claude/skills/postgres-neon-drizzle/references/migrations.md": {
+      "sha": "a5dd2806fff215cd3903957d8b8aae0d67e79adb1b3f88dc895ad7baa8fa01f0",
+      "mode": "owned"
+    },
+    ".claude/skills/postgres-neon-drizzle/references/neon.md": {
+      "sha": "3652188c3463dee2a5a8a5a083d914ec0a2b348978ee7de44abcd76a0fc02cb3",
+      "mode": "owned"
+    },
+    ".claude/skills/postgres-neon-drizzle/SKILL.md": {
+      "sha": "352cfe236eafb3434a1a02cdf3c34f9ae1c00ea7523a11a467c5afb00e005e93",
+      "mode": "owned"
+    },
+    ".claude/skills/research/SKILL.md": {
+      "sha": "f8415f3e48f6dd0e605662c998dcb08a8112f806e3ca629cdb72aa3560d23990",
+      "mode": "owned"
+    },
+    ".claude/skills/rule-authoring/SKILL.md": {
+      "sha": "1e8d451f92a49a81b1a2bba410d2f1c72b08d62f6fdc9790ca0000d7a65c5252",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/cli.md": {
+      "sha": "198e43afd85ba7294efc45bf1e7adefefd811afec0045a1395baa4607f4d27ea",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/customization.md": {
+      "sha": "12e4d5fd4ae05ec4cef759035d3a70fec474d857298fe0a0effa8880112f8a54",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/rules/a11y-primitives.md": {
+      "sha": "16c426f230a645a1a2859904173966f371511c5f851caa81d3730cff65797b43",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/rules/base-vs-radix.md": {
+      "sha": "2b2deb47d004285220c1fc6b38bb2edc2d0ccbcdafd031b0b189d5d8ed0d1ba8",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/rules/composition.md": {
+      "sha": "de068e5aa5351dd8e4af7bfb7a6333302445c15527eaeee521d8591e95e7d709",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/rules/forms.md": {
+      "sha": "29593e14381e34626f8e0e9c15c59f3394b92a0623af6a6ec94585400123853c",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/rules/icons.md": {
+      "sha": "d4a58266648872d9ee07d0c2368843a1cb88b8253b7f528dd7bda9d68b6c2535",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/rules/styling.md": {
+      "sha": "4a71da3fc53d8efbedac26946e5b13b53d1edf71583d62088ccc2b8cc7b5fef7",
+      "mode": "owned"
+    },
+    ".claude/skills/shadcn/SKILL.md": {
+      "sha": "94b6899ea35650aef577c88ea620233db11b843d8d1ce963f29d8f3d4aa00880",
+      "mode": "owned"
+    },
+    ".claude/skills/ui-patterns/references/README.md": {
+      "sha": "e7c2f18f29d47bce51674b122556fd956d5a045139a5eb231f8bf257784a20ad",
+      "mode": "owned"
+    },
+    ".claude/skills/ui-patterns/SKILL.md": {
+      "sha": "37ee0dbc6e64dde3b48b49a6dd242b62ddae9fe41bc6f726ac6838d406e52ee5",
+      "mode": "owned"
+    },
+    ".claude/stack-manifest.json": {
+      "sha": "d5aebe8ed82a1a0197b33431fe41aeb2ef0ea54964e564f4db6765060fa3ce09",
+      "mode": "owned"
+    },
+    ".commitlintrc.json": {
+      "sha": "aa5b18488d2ffa1ab58b72e21c6d40724874c2ba8d52201e08140e24d1ad1457",
+      "mode": "owned"
+    },
+    ".mcp.json": {
+      "sha": "cf9f774fa484bcdd560c250d9bc1a687fcf4ca74cd031ef6e90620940bd05203",
+      "mode": "owned"
+    },
+    ".semgrepignore": {
+      "sha": "b178bc7406466b6bb0595b464389cdc826b1c2b402b2d44da2ec0e4ea9a7e7e2",
+      "mode": "owned"
+    },
+    "biome.json": {
+      "sha": "e314c23445b73d68b918191b41052e1ecc3eac80b0aac4b2aa050892a4dcf827",
+      "mode": "owned"
+    },
+    "project-documentation/dependency-policy.md": {
+      "sha": "f5f4160a3c515f23ae33cd1a798b03f83c420e062834feae2b34d91b694e8f44",
+      "mode": "template"
+    },
+    "scripts/check-dep-alignment.mjs": {
+      "sha": "bd9111d75eed8d1bb12f418af21b8e391c5576a6d0fcedd9ab6e313f2524a6bf",
+      "mode": "owned"
+    },
+    "scripts/check-stack.mjs": {
+      "sha": "dd71f63435d7205dc3d06d55bf9cd39b5931fa56ba42180fde6f2926b8f25ad5",
+      "mode": "owned"
+    },
+    "scripts/check-workspace-tiers.mjs": {
+      "sha": "ad959793411c9a2628dbe4afd6cb2a414ad6dd8b2e1886217f1885745fe67b56",
+      "mode": "owned"
+    },
+    "scripts/db-branch.mjs": {
+      "sha": "dd99e39a8c24b544105c55b0135f75561e57540a57bac491cad5d0ece971c817",
+      "mode": "owned"
+    },
+    ".claude/rules/project/ui-inventory.md": {
+      "sha": "ffc49c56a08de00b5610015b6ed1d678164b8be93df0eade2fb13f53eb32f5d0",
+      "mode": "template"
+    },
+    ".gemini/config.yaml": {
+      "sha": "76e51c4738af94c9841135df26e0341e4c3eca202654ed679555c948682fd90a",
+      "mode": "owned"
+    },
+    ".gemini/styleguide.md": {
+      "sha": "00156b0c5086cdcaca7d821c40f0b58e4c6ee4e9e26e06365e2df0d1b6af3d44",
+      "mode": "owned"
+    },
+    ".github/dependabot.yml": {
+      "sha": "c6e25bbfad484b982ea674d1fc76479b217ad07efa24992cc38b5b98c71bfe23",
+      "mode": "owned"
+    },
+    ".github/workflows/ci.yml": {
+      "sha": "748d00a3a2a5326b14ddfd6ef54c35242b7b7cd43333fe5c03ca6a375ded7233",
+      "mode": "owned"
+    },
+    ".github/workflows/commitlint.yml": {
+      "sha": "24fc4b2cf56ba9a81ad105d3dcec7cb04977e0e07164997ae03050e2fb0c6a78",
+      "mode": "owned"
+    }
+  }
+}

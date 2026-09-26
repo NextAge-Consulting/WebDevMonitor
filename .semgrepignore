@@ -1,0 +1,75 @@
+# Semgrep is a SAST tool for source code. Skip everything that isn't source —
+# documentation, design assets, binaries, build artifacts, lockfiles.
+#
+# Without this file Semgrep walks every tracked path, hits binary content
+# (EPS/PDF/PNG) with regex-based secret rules, matches base64 noise as
+# "detected-private-key" / "detected-github-token", and times out the job.
+#
+# Dependency-level security is Dependabot's job, not Semgrep's — lockfiles
+# and manifest diffs belong to Dependabot alerts + version policy, so we
+# exclude package-lock.json here.
+
+# Documentation & reference assets
+project-documentation/
+docs/
+
+# Design binaries (catch-all in case they move out of project-documentation)
+*.pdf
+*.eps
+*.ai
+*.psd
+*.indd
+*.sketch
+*.fig
+*.xd
+
+# Raster / vector images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.avif
+*.ico
+*.svg
+
+# Video / audio
+*.mp4
+*.mov
+*.webm
+*.mp3
+*.wav
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Fonts
+*.woff
+*.woff2
+*.ttf
+*.otf
+*.eot
+
+# Build artifacts
+dist/
+build/
+.next/
+.astro/
+.turbo/
+.vite/
+coverage/
+.output/
+.nitro/
+
+# Lockfiles — Dependabot owns dependency security
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb

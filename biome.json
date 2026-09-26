@@ -1,0 +1,36 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
+	},
+	"files": {
+		"includes": [
+			"**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts,json}",
+			"!**/*.generated.*",
+			"!**/*.min.js",
+			"!**/*.min.mjs",
+			"!**/route-tree.gen.ts",
+			"!**/routeTree.gen.ts",
+			"!.claude",
+			"!project-documentation"
+		]
+	},
+	"formatter": {
+		"enabled": false
+	},
+	"assist": {
+		"enabled": false
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended"
+		}
+	},
+	"javascript": {
+		"jsxRuntime": "transparent"
+	}
+}

@@ -1,0 +1,20 @@
+# Claude Code per-developer state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+# Local tool state — per-machine, never tracked
+.venv
+.uv
+.bin
+.cache
+# Secrets — never tracked
+.env
+.env.*
+# OS / editor
+.DS_Store
+# Python
+__pycache__/
+*.pyc
+# Real server logs and analysis reports stay local — only the sanitized examples are tracked
+logs/*
+!logs/example-wd_sessions.log
+!logs/example-analysis.md

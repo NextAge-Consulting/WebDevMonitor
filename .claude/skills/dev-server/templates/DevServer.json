@@ -1,0 +1,12 @@
+{
+    "Profiles": [
+        {
+            "Name": "DevServer",
+            "Guid": "DEVSERVER-CLAUDE-DEV-TAB-001",
+            "Dynamic Profile Parent Name": "Default",
+            "Allow Title Setting": true,
+            "Title Components": 1,
+            "Custom Directory": "Recycle"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+  "processPattern": "WD*Session",
+  "basePath": "C:\\WebDevMonitor",
+  "mode": "kill",
+  "logLevel": "quiet",
+
+  "memKillImmediate": 3000,
+  "memKillSustained": 1500,
+  "cpuThresholdPct": 25,
+  "confirmSeconds": 10,
+
+  "checkIntervalMs": 5000,
+  "staleMinutes": 10,
+  "wmiTimeoutSec": 3,
+  "heartbeatMinutes": 5,
+  "logMaxMB": 10,
+  "dailySummary": true,
+  "detailsOnKill": true,
+
+  "nonWdCpuGapPct": 20,
+  "nonWdCpuTopN": 10
+}

@@ -1,0 +1,254 @@
+# CI: stack-detected checks on every PR targeting main.
+#
+# The repo's stack is auto-detected by file presence — NO per-project config:
+#   - Node    (root `package.json`)      → dep-alignment, check-types, biome,
+#                                           vitest
+#   - Python  (any `pyproject.toml`)      → ruff + pytest via uv, in each
+#                                           pyproject dir (monorepo layouts like
+#                                           services/<x>/ work with zero config)
+#   - Semgrep (always)                    → language-agnostic security scan
+# A polyglot repo runs both stacks; a single-stack repo skips the other's jobs.
+#
+# Detection runs in a fast `detect` job (it checks out and sets outputs); the
+# stack jobs gate on `needs.detect.outputs.*`. We do NOT gate on `hashFiles()`
+# at job level — the workspace isn't checked out when job `if:` is evaluated, so
+# hashFiles would be empty and every job would skip.
+#
+# A gated-out job reports "skipped" (neutral) — harmless: the pipeline uses no
+# branch protection (pipeline.md §1.1), and `/merge` self-gates on the check-runs
+# it actually finds, blocking on any failure. A skipped job is not a failure, so
+# it never blocks; there are no GitHub-required checks to wait forever on a
+# never-run job, and nothing to promote.
+#
+# NOTE: `/deploy` and `/sync-dev-kit` push DIRECTLY to main (no PR), so this
+# `pull_request`-triggered workflow never runs on a release or sync commit.
+
+name: ci
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: detect
+    runs-on: ubuntu-latest
+    outputs:
+      node: ${{ steps.d.outputs.node }}
+      python: ${{ steps.d.outputs.python }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - id: d
+        run: |
+          set -euo pipefail
+          node=false
+          python=false
+          [ -f package.json ] && node=true
+          if find . -name pyproject.toml \
+               -not -path '*/.venv/*' -not -path '*/node_modules/*' \
+               | grep -q .; then
+            python=true
+          fi
+          echo "node=$node"     >> "$GITHUB_OUTPUT"
+          echo "python=$python" >> "$GITHUB_OUTPUT"
+          echo "detected: node=$node python=$python"
+
+  # Monorepo invariant: every shared dependency is ONE version across all
+  # workspaces. Dependabot bumps each manifest independently and cannot see
+  # cross-app drift, so this gate is what screams the moment a dep diverges — the
+  # class of skew that causes "works in one app, breaks in another" outages. No
+  # install needed; the script only reads package.json files. On a single-package
+  # repo (no `workspaces`) it's a guaranteed pass. Discipline: DEPENDENCY-
+  # MANAGEMENT.md in the kit. Ships via _claude-project/templates/scripts/.
+  dep-alignment:
+    name: dep-alignment
+    needs: detect
+    if: ${{ needs.detect.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+      - run: node scripts/check-dep-alignment.mjs
+
+  # The one invariant: database code and browser code never share a package.
+  # The script DETECTS which tiers exist (server-shared, ui, web, headless apps)
+  # and enforces only the walls the repo actually has — a repo with no shared
+  # workspace is a guaranteed pass, so this runs unconditionally like
+  # dep-alignment. Doctrine: .claude/rules/ui-design.md, "The client/server
+  # wall". Ships via _claude-project/templates/scripts/.
+  workspace-tiers:
+    name: workspace-tiers
+    needs: detect
+    if: ${{ needs.detect.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+      - run: node scripts/check-workspace-tiers.mjs
+
+  # TanStack publishes no LTS — no `lts` dist-tag, no support window, just one
+  # rolling line per library. So the KIT is the LTS: one blessed version per
+  # package in .claude/stack-manifest.json and every project runs it. This
+  # gate enforces exact pins (a caret range drifts off the blessed version on a
+  # fresh install), keeps banned form libraries out (`npx shadcn add form` pulls
+  # react-hook-form as a hard dep, which type-checks and builds and surfaces
+  # months later), and fails when a front-end app has never ANSWERED the
+  # form-library question. Hermetic: no network, reads manifests only. A repo
+  # with no @tanstack/* dependency exits 0 in silence. Ships via
+  # _claude-project/templates/scripts/.
+  stack-standard:
+    name: stack-standard
+    needs: detect
+    if: ${{ needs.detect.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+      - run: node scripts/check-stack.mjs
+
+  check-types:
+    name: check-types
+    needs: detect
+    if: ${{ needs.detect.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check-types
+
+  biome:
+    name: biome
+    needs: detect
+    if: ${{ needs.detect.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # `@biomejs/biome` explicitly, and `--no-install`. A bare `npx biome`
+      # resolves to an UNRELATED package of that name on npm, which accepts
+      # `lint` as an unknown command and EXITS 0 — so this job reported success
+      # without linting. Worse on a runner than locally: without `--no-install`,
+      # npx DOWNLOADS and executes whatever the registry currently serves under
+      # that name, install scripts included, inside a checked-out repo.
+      # `--no-install` makes the job fail when the linter is not a declared
+      # devDependency, which is the correct outcome: a gate that cannot run must
+      # not pass.
+      - run: npx --no-install @biomejs/biome lint
+      # Every design token family is set by a role (the design-system skill).
+      # Biome cannot see this: a raw `text-sm` or `rounded-[6px]` is valid
+      # Tailwind and valid TSX, and it is exactly how one thing ends up at four
+      # sizes. A project that enforces its tokens declares the check as
+      # `lint:tokens`, and `lint:design` validates design.md against its spec.
+      # `--if-present` skips a project that has not declared one.
+      - run: npm run lint:tokens --if-present
+      - run: npm run lint:design --if-present
+
+  vitest:
+    name: vitest
+    needs: detect
+    if: ${{ needs.detect.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      # globalSetup.ts reads these to fork ONE ephemeral Neon branch per run
+      # for the integration tests (~$0.01/run). API_KEY + PROJECT_ID gate the
+      # integration project on (vitest.config.ts): both present → integration
+      # tests run; absent → unit-only. DATABASE_NAME + ROLE_NAME are optional
+      # but typically needed when the app's schema lives in a non-default DB.
+      # All four live in repo Secrets — see handbook §11.13. Add via:
+      # Settings → Secrets and variables → Actions.
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+      NEON_DATABASE_NAME: ${{ secrets.NEON_DATABASE_NAME }}
+      NEON_ROLE_NAME: ${{ secrets.NEON_ROLE_NAME }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  python:
+    name: python
+    needs: detect
+    if: ${{ needs.detect.outputs.python == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+        with:
+          enable-cache: true
+      # ruff + pytest in each pyproject.toml dir (excludes vendored venvs).
+      # Shop standard is uv; a Python project on poetry/pip instead needs this
+      # job taught its toolchain (same way the Node jobs hardcode npm). uv sync
+      # installs dev deps (ruff/pytest) by default and auto-provisions the
+      # Python pinned in pyproject/.python-version.
+      - name: ruff + pytest (uv) per pyproject
+        run: |
+          set -uo pipefail
+          fail=0
+          while IFS= read -r -d '' pp; do
+            dir="$(dirname "$pp")"
+            echo "::group::$dir"
+            (
+              cd "$dir"
+              uv sync || exit 1
+              uv run ruff check . || exit 1
+              # pytest exit 5 = "no tests collected" → treat as pass
+              uv run pytest -q; rc=$?
+              [ "$rc" -eq 0 ] || [ "$rc" -eq 5 ] || exit 1
+            ) || fail=1
+            echo "::endgroup::"
+          done < <(find . -name pyproject.toml \
+                     -not -path '*/.venv/*' -not -path '*/node_modules/*' -print0)
+          exit "$fail"
+
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      # On Dependabot PRs, emit a notice and succeed (the check still reports a
+      # SUCCESS status so a `semgrep` required-check, if configured, is satisfied
+      # and the dep-bump PR can merge). Dependabot PRs only change
+      # `package.json` / lockfile — no application source for Semgrep to scan;
+      # Dependabot's own vulnerability alerts are the real gate for dep security.
+      - name: Skip scan for Dependabot PRs
+        if: github.actor == 'dependabot[bot]'
+        run: |
+          echo "::notice::Semgrep skipped for Dependabot PR — lockfile-only diff has no source for scanning."
+      # On every other PR, run the real scan. `--error` fails the job on any
+      # finding so CI blocks the merge.
+      #
+      # Project-specific `--exclude-rule` flags belong here when a finding is
+      # addressed by a real config-level fix the rule's pattern matcher cannot
+      # detect (constitution §XIII option 3). Document each exclusion at the fix
+      # site so the rule's concern can be re-verified. `.semgrepignore` (§11.8)
+      # handles file-pattern excludes (binaries, design assets, lockfiles).
+      - name: Run Semgrep
+        if: github.actor != 'dependabot[bot]'
+        run: |
+          semgrep scan --config auto --error

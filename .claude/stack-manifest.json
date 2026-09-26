@@ -1,0 +1,317 @@
+{
+  "_README": [
+    "The kit's blessed versions, and the conditions under which each one applies.",
+    "",
+    "WHY THIS FILE EXISTS: the kit is a platform. It ships configs, CI jobs and a",
+    "library standard, and a platform that asserts a tool has to pin it \u2014 otherwise",
+    "every project answers 'which version do we run?' on its own and the fleet",
+    "silently diverges. The rule is one line:",
+    "",
+    "    THE KIT PINS WHAT THE KIT SHIPS, OR WHAT THE KIT'S CHOICES DRAG IN.",
+    "",
+    "That second clause is not decoration. `zod` is nobody's declared dependency in",
+    "some repos and is still the sharpest version trap in this stack, because",
+    "better-auth needs v4 while drizzle-kit and shadcn pull v3 \u2014 and the loser of",
+    "that hoist fails at RUNTIME, not at build.",
+    "",
+    "Anything the kit says nothing about stays the project's own call, handled by",
+    "Dependabot and the dependency-triage pass. This file is not a list of every",
+    "dependency; it is the list the kit refuses to let drift.",
+    "",
+    "EXACT VERSIONS, NOT RANGES. A caret lets a fresh install drift to a version the",
+    "kit never blessed, defeating lockstep silently \u2014 and `npm install` ADDS a caret",
+    "by default, which is how it keeps coming back. `whenResolved` entries are the",
+    "exception and pin a MAJOR, because a transitively-dragged package's exact",
+    "version is not the project's to choose.",
+    "",
+    "EACH ENTRY CARRIES ITS OWN TRIGGER, and the trigger is what makes 'opinionated",
+    "but does not block unless it matters' mechanical rather than a convention:",
+    "",
+    "  applies: 'whenDeclared'        this project declares it -> it must be ours",
+    "  applies: {whenFile: [...]}     a kit-shipped config is present -> the tool",
+    "                                 behind it must be pinned. No config, no opinion.",
+    "  applies: 'whenResolved'        it is anywhere in the lockfile, transitive",
+    "                                 included -> one major across the whole tree.",
+    "",
+    "  severity: 'required'           a violation fails the build",
+    "  severity: 'advisory'           a violation prints and passes \u2014 for a real",
+    "                                 problem the fleet has not adopted the fix for yet",
+    "",
+    "  installedBy: 'project'         a declared dependency; the guard checks package.json",
+    "  installedBy: 'ci'              installed by a workflow at run time; this file owns",
+    "                                 the version and CI reads it, so no project declares it",
+    "",
+    "ENFORCEMENT is scripts/check-stack.mjs (CI job `stack-standard`) \u2014 hermetic,",
+    "reads manifests and the lockfile, never the network.",
+    "",
+    "`blessed_at` is the date of the last full TanStack review. Entries added since",
+    "carry their own `blessedAt`, so one date never claims a review that did not happen.",
+    "",
+    "MOVING A PIN is /review-stack: read what changed between our version and latest,",
+    "decide whether it affects how WE use it, and update whatever references it",
+    "invalidates. Never bump this file to make a build pass."
+  ],
+  "blessed_at": "2026-08-06",
+  "packages": {
+    "@tanstack/react-router": {
+      "version": "1.170.21",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "@tanstack/react-start": {
+      "version": "1.168.38",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "@tanstack/react-router-ssr-query": {
+      "version": "1.167.1",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "@tanstack/react-query": {
+      "version": "5.101.4",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "@tanstack/react-form": {
+      "version": "1.33.3",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "@tanstack/react-form-start": {
+      "version": "1.33.3",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "@tanstack/react-table": {
+      "version": "9.0.0",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project"
+    },
+    "better-auth": {
+      "version": "1.7.2",
+      "applies": "whenDeclared",
+      "severity": "required",
+      "installedBy": "project",
+      "blessedAt": "2026-09-10",
+      "why": "Better Auth holds the front door, and its breaking changes are invisible until a version boundary. 1.7 made `issuer` a REQUIRED field on the account model and made sign-in filter on it: a project whose authaccount table predates that column has the field read as undefined, the filter never matches, and EVERY sign-in fails as \"Invalid email or password\" with the user, the account and the password hash all verifiably correct. A caret range walks a project across that boundary on a fresh install with no commit to blame. Pin exactly; treat an upgrade as a change that needs the auth tables re-checked against @better-auth/core's own schema definitions."
+    },
+    "@biomejs/biome": {
+      "version": "2.5.1",
+      "applies": {
+        "whenFile": [
+          "biome.json",
+          "biome.jsonc"
+        ]
+      },
+      "severity": "required",
+      "installedBy": "project",
+      "blessedAt": "2026-09-10",
+      "why": "The kit ships biome.json AND a CI biome job, so the kit owns the linter. biome.json's $schema names a version; a different binary reads that config as something else. Worse, a project that declares nothing at all gets `npx biome` resolving to an UNRELATED package of that name on npm which exits 0 \u2014 a lint gate that passes without linting, locally and on a runner."
+    },
+    "@commitlint/cli": {
+      "version": "21.2.2",
+      "applies": {
+        "whenFile": [
+          ".commitlintrc.json"
+        ]
+      },
+      "severity": "required",
+      "installedBy": "ci",
+      "blessedAt": "2026-09-10",
+      "ciWorkflow": ".github/workflows/commitlint.yml",
+      "why": "commitlint.yml installs this at run time. Unpinned, that executes whatever the registry serves under the name, and --no-save leaves no record of what ran. This file owns the version and the guard asserts the workflow names it, so the two cannot drift apart."
+    },
+    "@commitlint/config-conventional": {
+      "version": "21.2.2",
+      "applies": {
+        "whenFile": [
+          ".commitlintrc.json"
+        ]
+      },
+      "severity": "required",
+      "installedBy": "ci",
+      "blessedAt": "2026-09-10",
+      "ciWorkflow": ".github/workflows/commitlint.yml",
+      "why": "commitlint.yml installs this at run time. Unpinned, that executes whatever the registry serves under the name, and --no-save leaves no record of what ran. This file owns the version and the guard asserts the workflow names it, so the two cannot drift apart."
+    }
+  },
+  "_packages_notes": {
+    "@tanstack/react-table": "v9.0.0, GA 2026-08-04 after 54 alphas + 80 betas. v8 is NOT the conservative alternative \u2014 its last release was 8.21.3 on 2025-04-14. Do not use legacyCreateColumnHelper: open upstream TS issue (aggregationFn rejects built-in string identifiers).",
+    "@tanstack/react-router-ssr-query": "Glue package. Sole export setupRouterSsrQueryIntegration({router, queryClient}) \u2014 wires QueryClientProvider plus SSR dehydrate/hydrate/streaming. Required wherever Query is used with Start.",
+    "@tanstack/react-form-start": "Start integration for Form: formOptions, createServerValidate, getFormData, mergeForm. Versioned in lockstep with react-form."
+  },
+  "banned": {
+    "react-hook-form": "Use @tanstack/react-form. NOTE: `npx shadcn add form` installs this as a hard dependency \u2014 do not use shadcn's form atom; build field components against TanStack Form instead.",
+    "@hookform/resolvers": "Companion to react-hook-form. Same replacement.",
+    "formik": "Use @tanstack/react-form."
+  },
+  "form_library": "@tanstack/react-form",
+  "_form_rule": [
+    "Form-library adoption is decided PER APP, all-in within an app. Three states,",
+    "and the third is a hard failure:",
+    "  1. app declares @tanstack/react-form           -> decided, nothing to record",
+    "  2. app listed in FORM_LIB_EXEMPT_APPS          -> deliberately decided no",
+    "  3. app in neither                              -> question never asked, FAIL",
+    "FORM_LIB_EXEMPT_APPS is a space-separated app-name list in",
+    ".claude/sync-substitutions.json, read at runtime (same shape as DEPLOY_WORKFLOWS).",
+    "Exempt suits apps with no real data entry \u2014 ecommerce/cart surfaces, marketing",
+    "pages, and control-plane/service apps whose UI is a couple of status screens.",
+    "Data-entry apps (ERP browses and record forms) take the library."
+  ],
+  "references": [
+    {
+      "file": "data-loading.md",
+      "distilled_from": [
+        "@tanstack/router-core: router-core/data-loading",
+        "@tanstack/router-core: router-core/ssr"
+      ],
+      "plus": "our router+query wiring and guard pattern"
+    },
+    {
+      "file": "search-params.md",
+      "distilled_from": [
+        "@tanstack/router-core: router-core/search-params"
+      ],
+      "plus": "URL-as-browse-state, the all-digits coercion trap"
+    },
+    {
+      "file": "server-functions.md",
+      "distilled_from": [
+        "@tanstack/start-client-core: start-core/server-functions",
+        "@tanstack/start-client-core: start-core/execution-model"
+      ],
+      "plus": "auth-in-handler position and the middleware evidence"
+    },
+    {
+      "file": "queries-and-mutations.md",
+      "distilled_from": [],
+      "plus": "entirely ours \u2014 TanStack ships no Query skill"
+    },
+    {
+      "file": "browse-tables.md",
+      "distilled_from": [
+        "@tanstack/react-table: getting-started",
+        "@tanstack/react-table: table-state",
+        "@tanstack/react-table: with-tanstack-query"
+      ],
+      "plus": "server-paged browse doctrine, URL-vs-table paging"
+    },
+    {
+      "file": "forms.md",
+      "distilled_from": [],
+      "plus": "entirely ours \u2014 TanStack ships no Form skill"
+    },
+    {
+      "file": "loading-states.md",
+      "distilled_from": [],
+      "plus": "ours, from NN/g, Primer, Siemens, Bifrost et al"
+    },
+    {
+      "file": "auth.md",
+      "distilled_from": [
+        "@tanstack/router-core: router-core/auth-and-guards",
+        "@tanstack/start-client-core: start-core/auth-server-primitives"
+      ],
+      "plus": "house auth, betterAuth pitfalls"
+    },
+    {
+      "file": "webhooks.md",
+      "distilled_from": [
+        "@tanstack/start-client-core: start-core/server-routes"
+      ],
+      "plus": "raw body, signature-first, idempotency"
+    },
+    {
+      "file": "deployment.md",
+      "distilled_from": [
+        "@tanstack/start-client-core: start-core/deployment"
+      ],
+      "plus": "our Hono entry, ssr.noExternal, runtime assets"
+    },
+    {
+      "file": "debugging.md",
+      "distilled_from": [],
+      "plus": "ours \u2014 failure shapes specific to this stack"
+    },
+    {
+      "file": "dependency-management.md",
+      "distilled_from": [],
+      "plus": "ours \u2014 overrides safety under the Start chain"
+    }
+  ],
+  "_references_notes": [
+    "DISTILLED, not copied. Our subset in our words, scoped to what business",
+    "applications need. `distilled_from` records which upstream skills were read, so",
+    "/review-stack knows what to re-read when a pin moves; an empty list means",
+    "there is no upstream for it.",
+    "",
+    "NOT CARRIED, deliberately: every migrate-* skill (one-offs \u2014 SKILL.md says where",
+    "to read one), server-components (we do not use RSC), offline persistence,",
+    "virtualization (until a screen needs it).",
+    "",
+    "SCOPE RULE: if we do not use a feature, it does not get pages explaining how the",
+    "feature works. Upstream already documents it and node_modules already has it."
+  ],
+  "watch": {
+    "@tanstack/query-intent": {
+      "why": "TanStack/query PR #10879 (draft since 2026-06-04) adds 29 Query skills in a NEW @tanstack/query-intent package \u2014 not inside react-query. Query is currently the largest area with no upstream at all, so queries-and-mutations.md is written from scratch.",
+      "pr": "https://github.com/TanStack/query/pull/10879",
+      "action": "When it publishes, re-distil queries-and-mutations.md against it and keep only our decisions on top."
+    },
+    "@tanstack/react-table": {
+      "why": "v9.0.0 was 2 days old when blessed. Watch 9.0.1/9.1 and issues touching what we use: manualPagination, column visibility/order, row selection.",
+      "action": "Bump on the next review if patches have landed."
+    },
+    "start-middleware": {
+      "why": "We deliberately do NOT use createMiddleware for auth (server-functions.md). #2783 \u2014 server middleware in the client bundle \u2014 was open Nov 2024 to Feb 2026. Still open: #7213 (middleware calling a server function in another file throws) and #7459 (createMiddleware undefined on cold-start SSR in vite dev, filed against 1.168.9).",
+      "issues": [
+        "https://github.com/TanStack/router/issues/7213",
+        "https://github.com/TanStack/router/issues/7459"
+      ],
+      "action": "If both close, the technical objection is gone \u2014 but the decision still needs a reason to adopt beyond saving lines. Middleware's only real capability over a handler-top call is running code AFTER the handler. Re-open only when something genuinely needs wrapping."
+    }
+  },
+  "ssr_no_external": {
+    "_why": [
+      "Settled in mfing-bible-of-tanstack/references/deployment.md. TWO HALVES, and",
+      "they are NOT equally load-bearing \u2014 measured across the fleet, not assumed:",
+      "",
+      "  1. THE APP DECLARES THE MAJOR ITSELF (required).",
+      "     Vite inlines better-auth into dist/server/server.js, and the inlined",
+      "     `import 'zod'` resolves from the APP's directory. An app with its own",
+      "     nested v4 gets v4 no matter what is hoisted to the root. All 7 Vite apps",
+      "     across the 3 projects declare zod ^4.4.3, and all 3 root hoists differ",
+      "     (v3, v3 and v4) with no production failure anywhere.",
+      "     This half is what makes the root hoist irrelevant.",
+      "",
+      "  2. ssr.noExternal (advisory).",
+      "     Belt and braces for a hoist change that has not happened. 6 of the 7 apps",
+      "     do not carry it and run in production, so it is ROBUSTNESS, not",
+      "     correctness \u2014 and a check that failed them would be wrong, not strict.",
+      "",
+      "The reference says 'either alone works today; neither alone is robust to the",
+      "next hoist change.' That is exactly right, and it is why one half fails and",
+      "the other advises."
+    ],
+    "whenAppDeclares": "better-auth",
+    "requireDeclared": {
+      "zod": 4
+    },
+    "adviseSsrNoExternal": [
+      "better-auth",
+      "@noble/ciphers",
+      "@noble/hashes",
+      "zod"
+    ],
+    "reference": ".claude/skills/mfing-bible-of-tanstack/references/deployment.md",
+    "blessedAt": "2026-09-10"
+  }
+}

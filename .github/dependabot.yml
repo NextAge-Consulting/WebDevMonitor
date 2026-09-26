@@ -1,0 +1,163 @@
+# ---------------------------------------------------------------------------
+# Dependabot version & security updates.
+# Full design + rationale: https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/handbook.md#1110-dependabotyml-monthly--cooldown--grouping--revised-2026-04-20
+#
+# Cadence: monthly + cooldown. Cooldown delays PRs N days after a version
+# ships, dodging the 48-72h supply-chain-attack window (Shai-Hulud /
+# tinycolor incidents). Security fixes auto-skip cooldown (Dependabot
+# built-in, not config).
+#
+# Commit-message footgun: `include: scope` is INTENTIONALLY absent from
+# all blocks. With it, Dependabot appends its own `(deps)` scope on top
+# of the prefix → titles render as `chore(deps)(deps): ...`. The prefix
+# already carries the scope. Do not add `include: scope`.
+#
+# Per-project tunables: open-pull-requests-limit, cooldown days, ignore
+# lists, and EXTENSIONS to the toolchain/leaf patterns for project-specific
+# build-graph packages. The npm-toolchain vs npm-patch split itself is
+# kit-standard (it pairs with the dependency-triage skill, handbook §11.10a),
+# not a per-project invention. Prefixes (`chore(deps)`, `chore(deps-dev)`,
+# `chore(ci)`, `chore(docker)`) are NOT per-project — they must stay
+# stable to align with the commit-type parser and any review-tool
+# ignore-title configuration.
+# ---------------------------------------------------------------------------
+
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 3
+    cooldown:
+      semver-patch-days: 3
+      semver-minor-days: 7
+      semver-major-days: 30
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    labels:
+      - dependencies
+      - npm
+    groups:
+      # Build/SSR toolchain — bundler, React, TanStack, server adapter. Grouped
+      # SEPARATELY (patch + minor together) because these are the only npm bumps
+      # that can break the production build, which PR-CI does NOT catch (CI runs
+      # typecheck/biome/vitest only; the build gate lives in /merge, which a
+      # Dependabot PR never goes through). A toolchain
+      # group PR gets a local build + app smoke before merge and is NEVER batched
+      # with leaf patches, so one bad toolchain bump can't block safe leaf
+      # patches. This grouping is kit-standard for the shared TanStack/React/Vite
+      # stack — it pairs with the `dependency-triage` skill (handbook §11.10a).
+      # A non-stack consumer's patterns simply won't match; extend the list for
+      # project-specific build-graph packages.
+      npm-toolchain:
+        applies-to: version-updates
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vite-tsconfig-paths"
+          - "esbuild"
+          - "rollup"
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@tanstack/*"
+          - "hono"
+          - "@hono/*"
+          # Drizzle sits here on purpose. A drizzle-orm/drizzle-kit bump can
+          # change generated migration SQL and snapshot format — damage PR-CI
+          # cannot see, because CI runs no migration and builds no artifact.
+          # Grouped patch+minor so it always gets the local build + smoke pass,
+          # never a green-CI auto-merge alongside leaf patches.
+          - "drizzle-orm"
+          - "drizzle-kit"
+        update-types:
+          - patch
+          - minor
+      # Leaf patches — utility/runtime libs with no bundler involvement. Safe to
+      # merge on green CI. Toolchain excluded (caught by npm-toolchain above).
+      npm-patch:
+        applies-to: version-updates
+        exclude-patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vite-tsconfig-paths"
+          - "esbuild"
+          - "rollup"
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@tanstack/*"
+          - "hono"
+          - "@hono/*"
+          - "drizzle-orm"
+          - "drizzle-kit"
+        update-types:
+          - patch
+      npm-dev-minor:
+        applies-to: version-updates
+        dependency-type: development
+        update-types:
+          - minor
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 2
+    # github-actions supports only default-days for cooldown (no semver-bump days).
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 2
+    # docker supports only default-days for cooldown (no semver-bump days).
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(docker)"
+    labels:
+      - dependencies
+      - docker
+    groups:
+      docker-minor-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+    # Block Node major-version bumps. Odd Node releases never become LTS;
+    # evens enter Active LTS ~6 months after release. Dependabot can't
+    # distinguish. Active-LTS transitions are checked by the `dependency-triage`
+    # pass instead. Patches (24.x.y) still flow.
+    ignore:
+      - dependency-name: "node"
+        update-types:
+          - version-update:semver-major

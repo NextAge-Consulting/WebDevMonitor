@@ -1,0 +1,54 @@
+# Gemini Code Assist on GitHub — repo configuration.
+# Schema: developers.google.com/gemini-code-assist/docs/customize-repo-review
+#
+# Inert until the Gemini Code Assist GitHub App is installed on the org/repo.
+# Install via https://github.com/marketplace/gemini-code-assist
+#
+# Per-project tunables:
+#   - ignore_patterns: glob patterns Gemini will skip during review
+#   - code_review.comment_severity_threshold: LOW | MEDIUM | HIGH | CRITICAL
+#   - code_review.pull_request_opened.include_drafts: review draft PRs?
+# ---------------------------------------------------------------------------
+
+have_fun: false
+
+# Glob patterns Gemini will skip during review.
+# Note: Gemini already excludes .github/workflows/** by Google policy and
+# skips markdown by default — those are NOT listed here because they're vendor-side.
+ignore_patterns:
+  - "**/*.gen.ts"
+  - "**/routeTree.gen.ts"
+  - "**/route-tree.gen.ts"
+  - "**/*.generated.*"
+  - "**/package-lock.json"
+  - "**/pnpm-lock.yaml"
+  - "**/yarn.lock"
+  # project-documentation/ is prose/reference, not shipped code — not a review
+  # surface. Gemini already skips markdown vendor-side, but this also excludes the
+  # non-markdown docs that live here (rendered HTML reports, diagrams, etc.).
+  - "project-documentation/**"
+
+code_review:
+  # Set to LOW so Gemini surfaces everything; consumer triages in /triage.
+  # Tighten to MEDIUM/HIGH if review noise becomes an issue at your cadence.
+  comment_severity_threshold: LOW
+  max_review_comments: -1
+  pull_request_opened:
+    # Disabled 2026-05-12 — Claude's /open-pr generates the structured
+    # Summary/Changes/Testing PR body. Gemini's auto-summary as a separate
+    # comment was pure duplication. Gemini's code_review (inline comments
+    # with severity scoring) is the actual value-add.
+    summary: false
+    # Disabled 2026-05-28 — auto-review on PR open is replaced with
+    # explicit comment-driven triggers from gitflow scripts. /open-pr posts
+    # `/gemini review` after creating the PR; /commit posts on push when
+    # --review is passed (or user opts in via the prompt). /deploy never
+    # posts on release PRs (no code to review). Comment-trigger is a
+    # separate command path and continues to work with this disabled —
+    # see Gemini docs (developers.google.com/gemini-code-assist/docs).
+    # Rationale: trigger reality drives wait reality in wait-for-pr-ready.sh;
+    # decoupling the two led to release-PR wait hangs and quota burn.
+    code_review: false
+    # Set to true if you want Gemini to review draft PRs.
+    # Default false matches CR's auto_review.drafts: false behavior.
+    include_drafts: false
