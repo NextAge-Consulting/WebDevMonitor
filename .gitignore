@@ -18,3 +18,4 @@ __pycache__/
 logs/*
 !logs/example-wd_sessions.log
 !logs/example-analysis.md
+!logs/example-analysis.html

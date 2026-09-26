@@ -1,0 +1,89 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WebDevMonitor Log Analysis</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#e2e2e2;--card:#f7f7f8;--pass:#0a7d33;--partial:#b8860b;--fail:#c0392b;--accent:#2563eb;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151517;--fg:#e8e8e8;--mut:#9a9a9a;--line:#2c2c30;--card:#1e1e22;--pass:#4ade80;--partial:#eab308;--fail:#f87171;--accent:#60a5fa;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#151517;--fg:#e8e8e8;--mut:#9a9a9a;--line:#2c2c30;--card:#1e1e22;--pass:#4ade80;--partial:#eab308;--fail:#f87171;--accent:#60a5fa;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;font:15px/1.6 -apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+.wrap{max-width:980px;margin:0 auto;padding:24px}
+h1{font-size:22px;margin:0 0 4px}.meta{color:var(--mut);font-size:13px;margin:0 0 16px}
+.tally{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:104px}
+.stat b{display:block;font-size:22px}.stat span{color:var(--mut);font-size:12px}
+.note{background:var(--card);border-left:3px solid var(--partial);border-radius:6px;padding:12px 16px;margin:16px 0;font-size:14px}
+.flow,.sec{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;background:var(--card)}
+.flow.partial{border-color:var(--partial)}.flow.fail{border-color:var(--fail)}
+h2{font-size:16px;margin:0 0 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sec h2{display:block}
+.time{color:var(--mut);font-size:12px;font-weight:400;margin-left:auto}
+.sum{color:var(--mut);font-size:13px;margin:0 0 12px}
+.body{font-size:14px}.body h3{font-size:14px;margin:14px 0 4px}.body p{margin:8px 0}.body code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 4px;font-size:12px}
+.body pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:12px}
+.badge{font-size:12px;padding:2px 8px;border-radius:20px;font-weight:600}
+.badge.pass{background:color-mix(in srgb,var(--pass) 18%,transparent);color:var(--pass)}
+.badge.partial{background:color-mix(in srgb,var(--partial) 20%,transparent);color:var(--partial)}
+.badge.fail{background:color-mix(in srgb,var(--fail) 20%,transparent);color:var(--fail)}
+.steps,.body{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:600}tr.fail td{color:var(--fail)}
+.gallery{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.fig{margin:0;max-width:260px}
+.open{display:block}.open img{max-width:100%;border:1px solid var(--line);border-radius:8px;display:block;cursor:zoom-in}
+figcaption{font-size:11px;color:var(--mut);margin-top:4px;text-align:center}
+.lb-backdrop,.lb-close,.lb-prev,.lb-next,.lb-count{display:none}
+.fig:target .open img{position:fixed;inset:0;margin:auto;max-width:92vw;max-height:86vh;width:auto;height:auto;z-index:1000;cursor:default;border-color:transparent;border-radius:6px;box-shadow:0 10px 50px rgba(0,0,0,.6)}
+.fig:target .lb-backdrop{display:block;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999}
+.fig:target .lb-close,.fig:target .lb-prev,.fig:target .lb-next{display:flex;align-items:center;justify-content:center;position:fixed;z-index:1001;color:#fff;text-decoration:none;background:rgba(255,255,255,.14);border-radius:50%;line-height:1;user-select:none}
+.fig:target .lb-close{top:16px;right:20px;width:44px;height:44px;font-size:24px}
+.fig:target .lb-prev,.fig:target .lb-next{top:50%;transform:translateY(-50%);width:54px;height:54px;font-size:40px;padding-bottom:6px}
+.fig:target .lb-prev{left:16px}.fig:target .lb-next{right:16px}
+.fig:target .lb-count{display:block;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:1001;color:#fff;font-size:13px;background:rgba(0,0,0,.55);padding:4px 14px;border-radius:20px}
+.lb-close:hover,.lb-prev:hover,.lb-next:hover{background:rgba(255,255,255,.3)}
+.foot{font-size:12px;color:var(--mut);margin-top:24px;border-top:1px solid var(--line);padding-top:12px}
+.asks{border-color:var(--accent)}.ask-list{list-style:none;padding:0;margin:8px 0;display:grid;gap:10px;font-size:14px}
+.ask-list li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:baseline}.ask-list li>div>p:first-child{margin-top:0}
+.ask-id{font-weight:700;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 6px;font-variant-numeric:tabular-nums}
+.respond{font-size:13px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px;margin:12px 0 0}
+.for-viewer,.in-frame .for-file{display:none}.in-frame .for-viewer{display:inline}
+</style></head><body><div class="wrap" id="top">
+<h1>WebDevMonitor Log Analysis</h1>
+<p class="meta">Example Server (one week)</p>
+<div class="tally"><div class="stat"><b>7 days</b><span>monitored</span></div><div class="stat"><b>30</b><span>kills</span></div><div class="stat"><b>15</b><span>memory kills</span></div><div class="stat"><b>15</b><span>CPU kills</span></div><div class="stat"><b>370</b><span>peak sessions</span></div><div class="stat"><b>16.5 GB</b><span>largest session at kill</span></div></div>
+<div class="note"><b>Example.</b> This report was written from <code>logs/example-wd_sessions.log</code>, one real week of production data with application names and file paths scrubbed. Generate the stats for your own log with <code>python3 tools/analyze_log.py logs/&lt;your-log&gt;.log</code>, then write the findings up in this shape.</div>
+
+  <section class="sec" id="summary">
+    <h2>Summary</h2>
+    <div class="body"><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>Monitoring period</td><td>Mon Aug 10 00:00 - Sun Aug 16 23:55 (7.0 days)</td></tr><tr><td>Server</td><td>8 cores, 32 GB RAM, WebDev 28 application server</td></tr><tr><td>Total heartbeats</td><td>1,994</td></tr><tr><td>Total spikes (heartbeat sum)</td><td>12,612</td></tr><tr><td>Total kills</td><td><b>30</b> (15 CPU, 6 memory immediate, 9 memory sustained)</td></tr><tr><td>Peak process count</td><td>370 (Tue 11:36)</td></tr><tr><td>Peak WD memory</td><td>24.4 GB / 76.2% of 32 GB (Tue 11:36)</td></tr><tr><td>Peak individual process memory at kill</td><td>16,472.7 MB (Thu 09:56)</td></tr><tr><td>Monitor restarts</td><td>1 (Sun 03:31, the weekly scheduled reboot)</td></tr><tr><td>Heartbeat gaps &gt; 15 min</td><td>0</td></tr><tr><td>WMI timeouts/errors</td><td>0</td></tr><tr><td>Monitor version</td><td>v4.4</td></tr><tr><td>Config</td><td>kill mode, quiet logging, 3,000 MB immediate / 1,500 MB sustained, CPU 25%, 10s confirm, forensics on, NON_WD gap 20%</td></tr></tbody></table></div>
+    
+  </section>
+  <section class="sec" id="daily-detail">
+    <h2>Daily Detail</h2>
+    <div class="body"><table><thead><tr><th>Date</th><th>Day</th><th>Max procs</th><th>Max WD mem %</th><th>Kills</th><th>Spikes</th><th>Unique PIDs</th><th>Peak process MB</th></tr></thead><tbody><tr><td>Aug 10</td><td>Mon</td><td>312</td><td>65.9</td><td>6 (CPU)</td><td>2,321</td><td>652</td><td>1,633</td></tr><tr><td>Aug 11</td><td>Tue</td><td>370</td><td>76.2</td><td>0</td><td>2,824</td><td>698</td><td>2,692</td></tr><tr><td>Aug 12</td><td>Wed</td><td>332</td><td>70.3</td><td>5 (4 CPU, 1 mem)</td><td>2,666</td><td>676</td><td>5,867</td></tr><tr><td>Aug 13</td><td>Thu</td><td>297</td><td>63.4</td><td>10 (5 CPU, 5 mem)</td><td>2,777</td><td>684</td><td>16,473</td></tr><tr><td>Aug 14</td><td>Fri</td><td>289</td><td>58.4</td><td>9 (mem, sustained)</td><td>1,791</td><td>513</td><td>2,453</td></tr><tr><td>Aug 15</td><td>Sat</td><td>76</td><td>13.1</td><td>0</td><td>135</td><td>83</td><td>249</td></tr><tr><td>Aug 16</td><td>Sun</td><td>66</td><td>10.3</td><td>0</td><td>—</td><td>—</td><td>—</td></tr></tbody></table><p>The monitor's own DAILY-SUMMARY lines agree with the kill log on every day.</p></div>
+    
+  </section>
+  <section class="sec" id="memory-kills">
+    <h2>Memory Kills</h2>
+    <div class="body"><p><b>15 memory kills: 6 immediate (&gt;3,000 MB) and 9 sustained (&gt;1,500 MB for 10s).</b></p><table><thead><tr><th>Date</th><th>Time</th><th>Type</th><th>Before</th><th>At kill</th><th>Growth</th><th>CPU at kill</th><th>Age</th></tr></thead><tbody><tr><td>Wed</td><td>14:08:03</td><td>immediate</td><td>126.6 MB</td><td>5,867.3 MB</td><td>46x</td><td>12.5%</td><td>3h58m</td></tr><tr><td>Thu</td><td>09:56:38</td><td>immediate</td><td>82.6 MB</td><td>16,472.7 MB</td><td>199x</td><td>0.0%</td><td>26m</td></tr><tr><td>Thu</td><td>10:00:34</td><td>immediate</td><td>75.9 MB</td><td>5,130.0 MB</td><td>68x</td><td>12.4%</td><td>3m</td></tr><tr><td>Thu</td><td>10:30:02</td><td>immediate</td><td>107.4 MB</td><td>10,922.8 MB</td><td>102x</td><td>12.4%</td><td>1h32m</td></tr><tr><td>Thu</td><td>10:55:52</td><td>immediate</td><td>90.8 MB</td><td>5,676.5 MB</td><td>63x</td><td>12.4%</td><td>4m</td></tr><tr><td>Thu</td><td>11:44:32</td><td>immediate</td><td>107.5 MB</td><td>14,059.8 MB</td><td>131x</td><td>12.2%</td><td>1h14m</td></tr><tr><td>Fri</td><td>12:56-18:11</td><td>9 × sustained</td><td>60-83 MB</td><td>1,657-2,137 MB</td><td>peak ~2,440 MB each</td><td>11.8-12.5%</td><td>0m-17m</td></tr></tbody></table><h3>How to read a memory bomb</h3><ul><li><b>Single-sample explosion.</b> The forensic samples show a session sitting at a normal ~60-130 MB and then jumping to several GB between two 5-second polls. This isn't a slow leak.</li><li><b>One core pinned.</b> CPU at kill is ~12.5% on an 8-core server, which is exactly one core (100 ÷ 8). The runaway is a single-threaded allocation loop.</li><li><b>~16.4 GB ceiling.</b> A bomb that isn't caught stalls at about 16.4 GB with 0% CPU. It has hit a per-process allocation limit. Kills below that were caught while still growing.</li><li><b>Age doesn't matter.</b> Sessions from 3 minutes to 4 hours old blew up.</li><li><b>Clustering.</b> Thursday had 5 bombs between 09:56 and 11:44.</li></ul><h3>Friday: repeated same-size allocations</h3><p>Nine separate sessions, all on Friday afternoon, each allocated almost exactly <b>2.44 GB</b> and then trimmed to 1.66-2.14 GB. That sits between the 1,500 MB sustained threshold and the 3,000 MB immediate one, so they were caught by the sustained rule after its 10-second window rather than immediately. Several were killed less than a minute after launch.</p></div>
+    
+  </section>
+  <section class="sec" id="cpu-kills">
+    <h2>CPU Kills</h2>
+    <div class="body"><table><thead><tr><th>Date</th><th>Time</th><th>Kills</th><th>CPU per process</th><th>Sum of CPU</th><th>Memory</th><th>Ages</th></tr></thead><tbody><tr><td>Mon</td><td>11:24:36</td><td>6</td><td>36.1-88.1%</td><td>350.9%</td><td>46-84 MB</td><td>1-4m</td></tr><tr><td>Wed</td><td>09:43:06</td><td>4</td><td>28.9-57.1%</td><td>166.1%</td><td>71-83 MB</td><td>0-5m</td></tr><tr><td>Thu</td><td>15:09:25</td><td>5</td><td>25.6-154.5%</td><td>296.2%</td><td>54-88 MB</td><td>2-5m</td></tr></tbody></table><p>CPU kills came in groups: 4-6 small (46-88 MB), young (0-5 minute) sessions killed in the same second, after holding above the 25% threshold for the 10-second confirmation window. Each group's readings add up to more than 100% of the machine. That's the pattern described under <a href="../README.md#unexplained-cpu-readings">Unexplained CPU readings</a> in the README. The heartbeats show it too: Monday 11:52 reported 39 "hot" sessions totalling 7,370% WD CPU while system CPU was 5%.</p></div>
+    
+  </section>
+  <section class="sec" id="load-profile-weekdays">
+    <h2>Load Profile (weekdays)</h2>
+    <div class="body"><table><thead><tr><th>Hour</th><th>Avg procs</th><th>Max procs</th><th>Avg WD mem %</th></tr></thead><tbody><tr><td>07</td><td>43</td><td>95</td><td>7.2</td></tr><tr><td>08</td><td>117</td><td>183</td><td>21.8</td></tr><tr><td>09</td><td>215</td><td>271</td><td>44.9</td></tr><tr><td>10</td><td>253</td><td>299</td><td>56.7</td></tr><tr><td><b>11</b></td><td><b>266</b></td><td><b>370</b></td><td><b>60.3</b></td></tr><tr><td>12</td><td>262</td><td>332</td><td>59.8</td></tr><tr><td>13-15</td><td>242-249</td><td>312</td><td>55-57</td></tr><tr><td>16</td><td>209</td><td>278</td><td>48.1</td></tr><tr><td>17</td><td>158</td><td>220</td><td>33.5</td></tr><tr><td>18-23</td><td>20-103</td><td>168</td><td>3-21</td></tr></tbody></table><p>Ramp-up runs 08:00-09:00, then a plateau from 10:00 to 15:00 at ~250 sessions using 55-60% of RAM, and a wind-down after 16:00. Weekends peak at ~75 sessions and under 5 GB.</p></div>
+    
+  </section>
+  <section class="sec" id="non-wd-cpu-non-wd-spike">
+    <h2>Non-WD CPU (NON_WD_SPIKE)</h2>
+    <div class="body"><p>34 events where system CPU exceeded WebDev CPU by 20% or more.</p><table><thead><tr><th>Process</th><th>Events</th><th>Avg CPU</th><th>Max CPU</th><th>What it is</th></tr></thead><tbody><tr><td>WmiPrvSE</td><td>27</td><td>1.2%</td><td>2.0%</td><td>WMI provider, partly the monitor's own queries</td></tr><tr><td>MsMpEng</td><td>21</td><td>2.8%</td><td>15.6%</td><td>Windows Defender real-time scanning</td></tr><tr><td>chrome</td><td>21</td><td>11.9%</td><td>26.6%</td><td>Headless Chrome generating PDFs (<code>--print-to-pdf</code>)</td></tr><tr><td>System</td><td>19</td><td>2.6%</td><td>8.8%</td><td>Kernel</td></tr><tr><td>httpd</td><td>16</td><td>0.9%</td><td>2.0%</td><td>Apache</td></tr><tr><td>wd280admin</td><td>10</td><td>1.6%</td><td>3.4%</td><td>WebDev admin service</td></tr></tbody></table><p>About 29% of the system CPU in these events isn't attributed to any listed process. It's kernel and I/O time that per-process sampling can't see. Defender is present but modest. Before the exclusions in <code>project-documentation/windows-defender-exclusions-webdev.md</code> were applied, MsMpEng typically showed 6-26% on production servers like this one. If your log shows it that high, start there.</p><p><code>wd280session</code> entries in NON_WD lists are sessions that started between the monitor's process snapshot and its WMI query. They're picked up on the next poll, so this isn't a monitoring gap.</p></div>
+    
+  </section>
+  <section class="sec" id="key-observations">
+    <h2>Key Observations</h2>
+    <div class="body"><ol><li><b>Memory bombs are the real problem, and the monitor handles them.</b> Six sessions would each have consumed 5-16 GB of a 32 GB server. The immediate kill caught every one within a single poll.</li><li><b>Friday's nine 2.44 GB allocations were caught by the sustained rule</b>, so each ran for at least 10 seconds before being killed. A smaller runaway gets less prompt treatment than a big one.</li><li><b>CPU kills came in three same-second groups</b> (Mon, Wed, Thu), each of small, young sessions, matching the group pattern seen on other servers.</li><li><b>Load headroom is fine for now.</b> At the busiest moment, system memory was 62.8% used, leaving about 12 GB free. One uncaught memory bomb (up to 16 GB) would exhaust that, which is the case for keeping the immediate memory kill on.</li><li><b>The monitor itself was healthy.</b> No WMI errors, no heartbeat gaps, a clean restart after the weekly reboot, and daily summaries that match the kill log.</li></ol></div>
+    
+  </section>
+<p class="foot">Generated from the markdown write-up with <code>tools/build_report.py</code> · <a href="https://github.com/NextAge-Consulting/WebDevMonitor">WebDevMonitor</a></p>
+</div></body></html>

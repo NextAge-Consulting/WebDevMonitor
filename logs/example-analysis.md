@@ -1,5 +1,12 @@
 # WebDevMonitor Log Analysis - Example Server (one week)
 
+<!-- stat: 7 days | monitored -->
+<!-- stat: 30 | kills -->
+<!-- stat: 15 | memory kills -->
+<!-- stat: 15 | CPU kills -->
+<!-- stat: 370 | peak sessions -->
+<!-- stat: 16.5 GB | largest session at kill -->
+
 > **Example.** This report was written from `logs/example-wd_sessions.log`, one real week of production data with application names and file paths scrubbed. Generate the stats for your own log with `python3 tools/analyze_log.py logs/<your-log>.log`, then write the findings up in this shape.
 
 ## Summary

@@ -13,6 +13,14 @@ This project has **no build or deployment pipeline**. Versioning and this change
 
 ---
 
+## 2026-09-26 — HTML analysis reports (monitor unchanged)
+
+### Added
+- `tools/build_report.py`: turns an analysis write-up in markdown into a standalone HTML report, using the dev kit's shared report generator (`.claude/lib/gen-report.mjs`). The HTML is self-contained, theme-aware and suitable for attaching to an email. Stat tiles come from `<!-- stat: value | label -->` lines. Needs Node.js.
+- `logs/example-analysis.html`, generated from the example write-up.
+
+---
+
 ## v4.5 — 2026-09-26 — Fast memory check
 
 ### Added

@@ -185,8 +185,15 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
 
    `--top N` changes how many rows the top-N tables show (default 15).
 3. Write the findings up as `logs/<date>-<server>-analysis.md`, using **[`logs/example-analysis.md`](logs/example-analysis.md)** as the model. It was written from **[`logs/example-wd_sessions.log`](logs/example-wd_sessions.log)**, a real week of production data with names and paths scrubbed. Run the tool on the example log to see the whole workflow end to end.
+4. Turn the write-up into a standalone HTML report to share:
 
-**Everything in `logs/` is git-ignored except those two example files**, so real server logs and reports never get committed by accident.
+   ```bash
+   python3 tools/build_report.py logs/<date>-<server>-analysis.md
+   ```
+
+   This writes `logs/<date>-<server>-analysis.html` next to the markdown: one self-contained file with no external assets, light and dark themes, and readable on a phone, ready to attach to an email. Add stat tiles to the top by putting lines like `<!-- stat: 222 | kills -->` in the markdown; they're invisible when the markdown itself is viewed. It needs Node.js, and uses the report generator in `.claude/lib/gen-report.mjs`. See [`logs/example-analysis.html`](logs/example-analysis.html) for the result.
+
+**Everything in `logs/` is git-ignored except the example files**, so real server logs and reports never get committed by accident.
 
 ### What the tool reports
 
@@ -213,6 +220,7 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
 ```
 server/                   Copy to C:\WebDevMonitor on the WebDev server
 tools/analyze_log.py      Log analysis (runs on your machine)
+tools/build_report.py     Markdown write-up -> standalone HTML report
 logs/                     Drop logs here (git-ignored), plus the example log and report
 project-documentation/    Windows Defender exclusions guide
 ```
