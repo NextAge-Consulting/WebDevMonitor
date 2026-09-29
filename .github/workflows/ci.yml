@@ -174,7 +174,7 @@ jobs:
       # integration project on (vitest.config.ts): both present → integration
       # tests run; absent → unit-only. DATABASE_NAME + ROLE_NAME are optional
       # but typically needed when the app's schema lives in a non-default DB.
-      # All four live in repo Secrets — see handbook §11.13. Add via:
+      # All four live in repo Secrets — see testing.md §1. Add via:
       # Settings → Secrets and variables → Actions.
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
       NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}

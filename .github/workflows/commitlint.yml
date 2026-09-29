@@ -1,5 +1,5 @@
 # commitlint: enforce conventional commit format on the PR TITLE.
-# Full design + rationale: https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/handbook.md#111-commitlintyml
+# Full design + rationale: https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/kitmaintainer-handbook.md#111-commitlintyml
 #
 # Scope is PR title only — branch commits are NOT linted.
 # - Repo squash-merges with `commit title = PR_TITLE`. Branch commits
@@ -17,7 +17,7 @@
 #
 # Requires .commitlintrc.json at repo root. Parser regex tolerates
 # emoji-prefix commits (`✨ feat: ...`); keep in sync with the format
-# enforced by commit.sh (https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/handbook.md#111-commitlintyml).
+# enforced by commit.sh (https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/kitmaintainer-handbook.md#111-commitlintyml).
 
 name: commitlint
 on:

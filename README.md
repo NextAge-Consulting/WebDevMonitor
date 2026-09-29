@@ -192,7 +192,7 @@ The analysis tool is plain Python with no dependencies (`tools/analyze_log.py`, 
    ```
 
    `--webdev` takes files or folders. File names don't matter: the tool recognises WebDev logs by their content. Give it the WebDev **session log**: one line per request, with `CONNECT`, `PAGEOK`, `EXIT` and `*ERROR*` records. WebDev's **error log is not needed**. Every line in it is already in the session log, followed by the HTML error page that was served. If one is in the folder, the tool skips it and says so. Everything else in the report is unchanged, and without `--webdev` the tool behaves exactly as before.
-3. Write the findings up as `logs/<date>-<server>-analysis.md`, using **[`logs/example-analysis.md`](logs/example-analysis.md)** as the model. It was written from **[`logs/example-wd_sessions.log`](logs/example-wd_sessions.log)**, a real week of production data with names and paths scrubbed. Run the tool on the example log to see the whole workflow end to end.
+3. Write the findings up as `logs/<date>-<server>-analysis.md`, using **[`logs/example-analysis.md`](logs/example-analysis.md)** as the model. It was written from **[`logs/example-wd_sessions.log`](logs/example-wd_sessions.log)**, a real week of production data with names and paths scrubbed. Run the tool on the example log to see the whole workflow end to end. If there's an earlier write-up for the same server, copy its comparison table into the new one and add a row for the new period, so the latest report always carries the server's history.
 
    If you ran it with `--webdev`, add a **WebDev cross-reference** section to the write-up:
    - Open with the clock offset the tool measured and its match rate, so the reader can see the join is sound.

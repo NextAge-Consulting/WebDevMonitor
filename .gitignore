@@ -26,3 +26,7 @@ logs/*
 !logs/example-wd_sessions.log
 !logs/example-analysis.md
 !logs/example-analysis.html
+# Claude Code per-developer state
+# Local tool state — per-machine, never tracked
+# Secrets — never tracked
+!.env.example

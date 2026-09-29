@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
 # Dependabot version & security updates.
-# Full design + rationale: https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/handbook.md#1110-dependabotyml-monthly--cooldown--grouping--revised-2026-04-20
+# Full design + rationale: https://github.com/NextAge-Consulting/nextage-dev-kit/blob/main/project-documentation/kitmaintainer-handbook.md#1110-dependabotyml-monthly--cooldown--grouping--revised-2026-04-20
 #
 # Cadence: monthly + cooldown. Cooldown delays PRs N days after a version
 # ships, dodging the 48-72h supply-chain-attack window (Shai-Hulud /
@@ -15,7 +15,7 @@
 # Per-project tunables: open-pull-requests-limit, cooldown days, ignore
 # lists, and EXTENSIONS to the toolchain/leaf patterns for project-specific
 # build-graph packages. The npm-toolchain vs npm-patch split itself is
-# kit-standard (it pairs with the dependency-triage skill, handbook §11.10a),
+# kit-standard (it pairs with the dependency-triage skill, pipeline.md §3.4),
 # not a per-project invention. Prefixes (`chore(deps)`, `chore(deps-dev)`,
 # `chore(ci)`, `chore(docker)`) are NOT per-project — they must stay
 # stable to align with the commit-type parser and any review-tool
@@ -51,7 +51,7 @@ updates:
       # group PR gets a local build + app smoke before merge and is NEVER batched
       # with leaf patches, so one bad toolchain bump can't block safe leaf
       # patches. This grouping is kit-standard for the shared TanStack/React/Vite
-      # stack — it pairs with the `dependency-triage` skill (handbook §11.10a).
+      # stack — it pairs with the `dependency-triage` skill (pipeline.md §3.4).
       # A non-stack consumer's patterns simply won't match; extend the list for
       # project-specific build-graph packages.
       npm-toolchain:
