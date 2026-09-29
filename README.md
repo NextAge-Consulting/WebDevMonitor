@@ -174,7 +174,7 @@ A heartbeat, and a non-WebDev CPU spike:
 
 ## 3. Run an Analysis (on your own machine)
 
-The analysis tool is a single Python script with no dependencies. It needs Python 3.9 or newer.
+The analysis tool is plain Python with no dependencies (`tools/analyze_log.py`, plus `tools/webdev_log.py` for the optional WebDev cross-reference). It needs Python 3.9 or newer.
 
 1. Copy `C:\WebDevMonitor\wd_sessions.log` off the server, and `wd_sessions.log.bak` if it exists (the previous 10 MB), into this repo's **`logs/`** folder. Give it a name that says which server and when, e.g. `logs/myserver-20260924.log`.
 2. Run the tool:
@@ -184,7 +184,22 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
    ```
 
    `--top N` changes how many rows the top-N tables show (default 15).
+
+   **Optional: add the WebDev logs.** If you can also get the WebDev Application Server's own daily session logs for the same days, copy them into a folder (e.g. `logs/myserver-20260924-webdev/`) and add `--webdev`:
+
+   ```bash
+   python3 tools/analyze_log.py logs/myserver-20260924.log --webdev logs/myserver-20260924-webdev/ > logs/myserver-20260924-stats.md
+   ```
+
+   `--webdev` takes files or folders. File names don't matter: the tool recognises WebDev logs by their content. Give it the WebDev **session log**: one line per request, with `CONNECT`, `PAGEOK`, `EXIT` and `*ERROR*` records. WebDev's **error log is not needed**. Every line in it is already in the session log, followed by the HTML error page that was served. If one is in the folder, the tool skips it and says so. Everything else in the report is unchanged, and without `--webdev` the tool behaves exactly as before.
 3. Write the findings up as `logs/<date>-<server>-analysis.md`, using **[`logs/example-analysis.md`](logs/example-analysis.md)** as the model. It was written from **[`logs/example-wd_sessions.log`](logs/example-wd_sessions.log)**, a real week of production data with names and paths scrubbed. Run the tool on the example log to see the whole workflow end to end.
+
+   If you ran it with `--webdev`, add a **WebDev cross-reference** section to the write-up:
+   - Open with the clock offset the tool measured and its match rate, so the reader can see the join is sound.
+   - Then give one row per kill: the session's age, requests served, the user's last page, what they got next, and whether they came back.
+   - Close with a sentence on the impact: how many users were cut off, and how quickly they returned.
+   - Report only the rows where `Age agrees` is `yes`, and say how many were left out.
+   - Leave client IP addresses out of the write-up. The tool uses them only to spot a user reconnecting.
 4. Turn the write-up into a standalone HTML report to share:
 
    ```bash
@@ -205,6 +220,18 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
 - **Daily table:** heartbeat peaks next to the monitor's own `DAILY-SUMMARY`, with any mismatch called out.
 - **Hourly load profile:** weekdays and weekends separately.
 - **CPU_HOT heartbeats and non-WebDev CPU attribution:** which other processes (Defender, Chrome PDF rendering, Apache, and so on) take the CPU, and how much is unattributed.
+- **WebDev cross-reference** (only with `--webdev`): for every kill, the WebDev session it hit, when that session started, how many requests it had served, the user's last request before the kill, what the user got on their next click, and whether the same IP address connected again (and how soon). Also a count of how WebDev sessions ended over the period (`EXIT` reason, or no `EXIT` at all).
+
+### How the cross-reference lines the two logs up
+
+Two things make the join less obvious than "same PID":
+
+- **The clocks can differ.** The monitor writes server local time. The WebDev log may not: on the server this was built against it ran exactly one hour behind (UTC against British Summer Time), and a gap like that changes when the clocks change. The tool **measures** the offset rather than assuming it. It tries every offset in 15-minute steps and picks the one at which the session PIDs the monitor names in its heartbeats (`TOP_MEM`, `TOP_CPU`) are running WebDev sessions. The report prints the winning offset, the share of heartbeat PIDs it matched (expect well over 90%), and the best score more than an hour away, so a clear winner is visible at a glance. If the logs overlap too little to measure it, or you already know it, set it with `--webdev-offset HOURS` (monitor clock minus WebDev clock, e.g. `1` or `-5.5`).
+- **Windows reuses PIDs.** The same PID turns up for many different sessions over a day. The tool splits each PID's history into separate sessions, one per `CONNECT`, and picks the one running at the moment of the kill.
+
+**`Age agrees` is the check that the match is right.** The monitor logs each killed process's `AGE`. The tool compares it with the WebDev session's `CONNECT` time. A killed session never gets an `EXIT` line, so with a wrong offset the tool can still land on a session; the ages then disagree and the report prints a warning. Trust a row only when it says `yes`.
+
+The tool only reads these logs. The runaways are a fault in the WebDev binaries (see [section 1](#1-what-it-does-and-why)), so the cross-reference is about the **impact** of each kill and **confirming it hit the right session**, not about finding a cause in the application.
 
 ### Reading the numbers
 
@@ -212,6 +239,19 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
 - **Several memory bombs in one morning**: bombs often come in clusters. The kill times show when the server was under the most strain.
 - **`wd<ver>session` listed as a non-WebDev process:** a session that started between the monitor's two queries. It's picked up on the next poll.
 - **High `MsMpEng`** in non-WebDev spikes: apply the [Defender exclusions](project-documentation/windows-defender-exclusions-webdev.md).
+- **`ERR_BAD_CONTEXT_FOUND` as the user's next request:** the user clicked again after the kill and WebDev no longer had their session. That's the error page they saw. `none logged` means they didn't click again on that session.
+- **`Same IP reconnected`:** a new `CONNECT` from the same IP address within 30 minutes. Users usually come back within seconds, often opening several sessions at once. Several users can share one IP (an office behind one router), so treat this as a strong hint rather than proof it was the same person.
+- **`no EXIT logged, PID later reused`** in the session endings: sessions that disappeared without WebDev recording an end. Monitor kills are among them; the line below gives the monitor's kill count for the same period to compare.
+
+### Testing the tool
+
+After changing `tools/analyze_log.py` or `tools/webdev_log.py`, run the tests from the repository root:
+
+```bash
+python3 -m unittest discover -s tools
+```
+
+They build their own small monitor and WebDev logs from invented values, so no real server data is needed or committed.
 
 ---
 
@@ -220,6 +260,8 @@ The analysis tool is a single Python script with no dependencies. It needs Pytho
 ```
 server/                   Copy to C:\WebDevMonitor on the WebDev server
 tools/analyze_log.py      Log analysis (runs on your machine)
+tools/webdev_log.py       Optional cross-reference with the WebDev session logs (used by analyze_log.py --webdev)
+tools/test_webdev_log.py  Tests for the analysis tools
 tools/build_report.py     Markdown write-up -> standalone HTML report
 logs/                     Drop logs here (git-ignored), plus the example log and report
 project-documentation/    Windows Defender exclusions guide

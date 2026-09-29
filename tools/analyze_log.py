@@ -4,10 +4,17 @@ logs/*-analysis.md write-ups.
 
 Usage:
     python3 tools/analyze_log.py logs/<file>.log [--top N]
+        [--webdev <file or folder> ...] [--webdev-offset HOURS]
+
+--webdev adds a cross-reference against the WebDev Application Server's own
+session logs (optional): which WebDev session each kill hit, what its user was
+doing, and what they saw next. See tools/webdev_log.py.
 
 Output is a plain-text/markdown stat dump; the analysis document is written
 from it. Standard library only.
 """
+from __future__ import annotations
+
 import argparse
 import collections
 import datetime as dt
@@ -15,6 +22,8 @@ import re
 import statistics
 import sys
 from typing import Any
+
+import webdev_log
 
 # SYS_CPU / SYS_MEM fields arrived after v4.0; older heartbeats lack them
 HB_RE = re.compile(
@@ -70,7 +79,7 @@ def parse(path: str) -> tuple[list[Record], list[Record], list[Record], list[tup
             if not m:
                 continue
             g = m.groups()
-            hb.append(dict(t=t, procs=int(g[0]), topmem_pid=g[1], topmem=float(g[2] or 0),
+            hb.append(dict(t=t, procs=int(g[0]), topmem_pid=g[1], topmem=float(g[2] or 0), topcpu_pid=g[3],
                            topcpu=float(g[4] or 0), sys=int(g[5] or 0), wd=float(g[6] or 0),
                            sysmem=float(g[7] or 0), totmem=float(g[8] or 0), sysmemp=float(g[9] or 0),
                            wdmem=float(g[10] or 0), wdmemp=float(g[11] or 0), spikes=int(g[13]),
@@ -124,7 +133,8 @@ def section(title: str) -> None:
     out(f'\n## {title}\n')
 
 
-def report(path: str, top: int) -> None:
+def report(path: str, top: int, webdev: list[str] | None = None,
+           webdev_offset: float | None = None) -> None:
     hb, kills, nws, starts, configs, summaries, wmi_timeouts = parse(path)
     if not hb:
         sys.exit(f'{path}: no heartbeats found')
@@ -290,13 +300,112 @@ def report(path: str, top: int) -> None:
             procs = ', '.join(f'{p["name"]} {p["cpu"]}%' for p in n['procs'] if p['cpu'] > 0)
             out(f'  {fmt_t(n["t"])} SYS {n["sys"]}% WD {n["wd"]}% -> {procs or "(nothing attributed)"}')
 
+    if webdev:
+        webdev_section(hb, kills, webdev, webdev_offset)
+
+
+def fmt_delta(d: dt.timedelta) -> str:
+    secs = int(d.total_seconds())
+    return f'{secs}s' if abs(secs) < 120 else f'{secs // 60}m{secs % 60:02d}s'
+
+
+def webdev_section(hb: list[Record], kills: list[Record], paths: list[str], given: float | None) -> None:
+    section('WebDev cross-reference')
+    data = webdev_log.parse(paths, keep_pids={k['pid'] for k in kills})
+    if data.skipped:
+        out(f'Skipped (WebDev error logs, not needed): {", ".join(f.rsplit("/", 1)[-1] for f in data.skipped)}')
+    if not data.files or data.first is None or data.last is None:
+        out(f'No WebDev session log found in: {", ".join(paths)}')
+        return
+    out(f'Files: {", ".join(f.rsplit("/", 1)[-1] for f in data.files)}')
+    out(f'Records: {data.records:,}')
+    out(f'WebDev log period (WebDev clock): {fmt_t(data.first)} -> {fmt_t(data.last)}')
+
+    if given is not None:
+        off = webdev_log.OffsetResult(dt.timedelta(hours=given), given=True)
+    else:
+        off = webdev_log.detect_offset(hb, data)
+    if off.offset is None:
+        out('Clock offset: could not be detected. The WebDev logs must overlap the monitor log by '
+            f'at least {webdev_log.MIN_SCORED_HEARTBEATS} heartbeats. Set it with --webdev-offset HOURS.')
+        return
+    offset = off.offset
+    if off.given:
+        out(f'Clock offset: monitor = WebDev {webdev_log.fmt_offset(offset)} (given with --webdev-offset)')
+    else:
+        far = (f'; the best offset more than an hour away, {webdev_log.fmt_offset(off.runner_up[0])}, '
+               f'scores {off.runner_up[1]:.0%}') if off.runner_up else ''
+        out(f'Clock offset: monitor = WebDev {webdev_log.fmt_offset(offset)} (detected: {off.score:.0%} of '
+            f'{off.scored} heartbeat TOP_MEM/TOP_CPU PIDs are running WebDev sessions at that offset{far})')
+        if off.score < 0.9:
+            out('WARNING: under 90% of heartbeat PIDs matched. Treat the matches below with suspicion, '
+                'or set the offset with --webdev-offset.')
+    out(f'WebDev coverage (monitor clock): {fmt_t(data.first + offset)} -> {fmt_t(data.last + offset)}')
+
+    matches = webdev_log.match_kills(kills, data, offset)
+    covered = [m for m in matches if m.covered]
+    out(f'Kills inside WebDev coverage: {len(covered)} of {len(kills)}')
+    if covered:
+        out('\n| Kill (monitor clock) | PID | Reason | AGE | WebDev session start | Age agrees | '
+            'Requests served | Last request before kill | User\'s next request | Same IP reconnected |')
+        out('|---|---|---|---|---|---|---|---|---|---|')
+    for m in covered:
+        k, s = m.kill, m.session
+        head = f'| {fmt_t(k["t"])} | {k["pid"]} | {k["reason"]} | {k["age"]} |'
+        if s is None:
+            out(f'{head} no WebDev session running on this PID | | | | | |')
+            continue
+        start = f'{s.start + offset:%H:%M:%S}' if s.connect_seen else 'before the log began'
+        agree = '-' if m.age_ok is None else ('yes' if m.age_ok else f'no ({fmt_delta(m.webdev_age)})'
+                                             if m.webdev_age is not None else 'no')
+        w = k['t'] - offset
+        last = (f'{fmt_delta(w - m.last_request.t)} before, {m.last_request.code}'
+                if m.last_request else 'none')
+        nxt = (f'{m.next_request.code or m.next_request.status} {fmt_delta(m.next_request.t - w)} after'
+               if m.next_request else 'none logged')
+        back = f'after {fmt_delta(m.reconnect)}' if m.reconnect is not None else \
+            f'not within {int(webdev_log.RECONNECT_WINDOW.total_seconds() // 60)}m'
+        out(f'{head} {start} | {agree} | {s.requests} | {last} | {nxt} | {back} |')
+    found = [m for m in covered if m.session]
+    if covered:
+        out(f'\nMatched to a WebDev session: {len(found)} of {len(covered)}; '
+            f'AGE agrees with the session start: {sum(bool(m.age_ok) for m in found)}; '
+            f'user got an error page next: {sum(m.next_request is not None for m in found)}; '
+            f'same IP reconnected: {sum(m.reconnect is not None for m in found)}')
+        if any(m.age_ok is False for m in found):
+            out('WARNING: AGE disagrees with the WebDev session start for at least one kill. A killed session '
+                'logs no EXIT, so a wrong clock offset can still land on one; check the offset before '
+                'trusting that row.')
+        backs = [m.reconnect.total_seconds() for m in found if m.reconnect is not None]
+        if backs:
+            out(f'Reconnect delay: median {fmt_delta(dt.timedelta(seconds=statistics.median(backs)))}')
+
+    out('\nWebDev session endings over the whole WebDev period:')
+    ends: collections.Counter[str] = collections.Counter()
+    for v in data.sessions.values():
+        for x in v:
+            if x.exit_reason:
+                ends[f'EXIT {x.exit_reason}'] += 1
+            elif x.superseded:
+                ends['no EXIT logged, PID later reused'] += 1
+            else:
+                ends['no EXIT logged, still open at log end'] += 1
+    for reason, n in ends.most_common():
+        out(f'  {reason}: {n:,}')
+    in_period = sum(1 for k in kills if data.first <= k['t'] - offset <= data.last)
+    out(f'  (monitor kills in the same period: {in_period})')
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('log')
     ap.add_argument('--top', type=int, default=15, help='rows in top-N tables (default 15)')
+    ap.add_argument('--webdev', nargs='+', metavar='PATH',
+                    help='WebDev session logs, or folders holding them, to cross-reference (optional)')
+    ap.add_argument('--webdev-offset', type=float, metavar='HOURS',
+                    help='monitor clock minus WebDev clock, e.g. 1 or -5.5; detected from the logs when omitted')
     a = ap.parse_args()
-    report(a.log, a.top)
+    report(a.log, a.top, a.webdev, a.webdev_offset)
 
 
 if __name__ == '__main__':

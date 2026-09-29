@@ -13,6 +13,19 @@ This project has **no build or deployment pipeline**. Versioning and this change
 
 ---
 
+## 2026-09-29 — Cross-reference with WebDev session logs (monitor unchanged)
+
+### Added
+- `tools/analyze_log.py --webdev <files or folders>`: optionally reads the WebDev Application Server's own session logs alongside the monitor log. For each kill it reports the WebDev session that was hit, the session's start and request count, the user's last request, the error page they got on their next click, and whether the same IP reconnected. It also counts how WebDev sessions ended over the period. Without `--webdev` the report is unchanged.
+- The clock offset between the two logs is measured from the data (heartbeat PIDs against live WebDev sessions) and printed with its match rate; `--webdev-offset HOURS` overrides it. The monitor's `AGE` is checked against each session's start, and a disagreement prints a warning.
+- Only the WebDev session log is read. WebDev's error log is not needed, because the session log carries every error record; the tool skips error logs it finds and names them in the report.
+- `tools/webdev_log.py`, the WebDev log parser, and `tools/test_webdev_log.py`, tests built on invented logs (`python3 -m unittest discover -s tools`).
+
+### Changed
+- The heartbeat parser now keeps the `TOP_CPU` PID as well as the `TOP_MEM` PID.
+
+---
+
 ## 2026-09-26 — HTML analysis reports (monitor unchanged)
 
 ### Added
